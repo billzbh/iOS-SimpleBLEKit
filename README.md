@@ -1,6 +1,13 @@
 # iOS-SimpleBLEKit
 iOS上BLE的简单粗暴工具类。流程简单直观。适合新手使用。
 ## 一. demo效果
+
+iPad demo:
+![IPAD](https://github.com/billzbh/iOS-SimpleBLEKit/blob/master/image/IMG_0010.jpg)
+
+iphone demo：
+![iphone_1](https://github.com/billzbh/iOS-SimpleBLEKit/blob/master/image/IMG_0011.jpg) ![iphone_2](https://github.com/billzbh/iOS-SimpleBLEKit/blob/master/image/IMG_0012.jpg) ![iphone_3](https://github.com/billzbh/iOS-SimpleBLEKit/blob/master/image/IMG_0013.jpg)
+
 ## 二. 写这个很SimpleBLE的背景
 工作中，时不时有新的开发任务，需要接入新的蓝牙设备，而且可能蓝牙设备的报文通讯协议也是不一样的。这样以前写好的SDK中的协议就不通用了。但是对于蓝牙设备连接部分，那都是差不多的，流程是一致。
 
@@ -183,4 +190,6 @@ iOS上BLE的简单粗暴工具类。流程简单直观。适合新手使用。
 * 后台模式暂时不做考虑，其实是我也没有很好的解决办法🙄，要的就是简单粗暴😂。
 * 感谢CCTV,感谢女儿,感谢垃圾的苹果BLE接口。怼我啊，操！🤔
 
+
+## 最后欢迎大家拍砖给建议。我邮箱: bill_zbh@163.com
 
