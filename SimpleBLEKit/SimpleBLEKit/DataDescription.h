@@ -20,8 +20,7 @@
 -(void)setNeekAckEvaluator:(PacketEvaluator _Nonnull)ackEvaluator;
 
 -(BOOL)isValidPacket;//每次调用都会调用PacketEvaluator块函数解析是否收包正确。如果正确就通知，失败继续直到超时
-
--(BOOL)isNeedToACK;
+-(BOOL)isNeedToACK;//每次调用都会调用PacketEvaluator块函数解析是否需要回ACK
 
 -(NSData * _Nonnull)getPacketData;
 

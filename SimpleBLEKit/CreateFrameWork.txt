@@ -1,6 +1,7 @@
 制作framework
 http://blog.csdn.net/dcw050505/article/details/53122956
 
+手动:
 编译通过并生成 模拟器版本和真机版本的 framework
 使用命令 lipo -create 真机framework/库文件 模拟器framework/库文件 －output 库文件
 解释： 将两个不同平台的库文件合并成一个库文件，大小为两者之和
@@ -9,10 +10,8 @@ http://blog.csdn.net/dcw050505/article/details/53122956
 
 
 
-合并framework.
-使用命令查看framwork支持的cpu集
-lipo -info your.famework/your
-会输出:Architectures in the fat file: your.framework/your are: armv7  arm64
+脚本：前提是编译生成了不同版本的库
+
 
 1,在Build Phases中增加Run Script
 2,添加script:

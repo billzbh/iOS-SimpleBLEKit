@@ -35,6 +35,10 @@
 //操作方法
 -(void)connectDevice:(BLEStatusBlock _Nullable)myStatusBlock;
 -(void)disconnect;
+
+// 1. 只设置data，而block为nil，timeout为-1，则表示只发送，不关心是否收到数据
+// 2. 只设置data，block，但 timeout为-1，则表示需要收到数据，但永远不超时
+// 3. 只设置block，但data为nil，timeout为-1，则表示一直等待Notify的数据
 -(void)sendData:(NSData * _Nonnull)data
     receiveData:(receiveDataBlock _Nullable)callback
         Timeout:(NSTimeInterval)timeInterval;
