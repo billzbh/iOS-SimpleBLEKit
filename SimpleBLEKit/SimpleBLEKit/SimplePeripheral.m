@@ -205,6 +205,7 @@
     
     if (_peripheral==nil) {
         if(_isLog) NSLog(@"发生nil错误,可能外设SimplePeripheral并不是来自搜索得来的对象");
+        return;
     }
 
     [self.centralManager connectPeripheral:_peripheral

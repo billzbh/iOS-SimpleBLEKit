@@ -212,8 +212,10 @@
     int len1 = (int)[bytesData1 length];
     int len2 = (int)[bytesData2 length];
     if (len1 != len2) {
-        NSLog(@"不能进行模二加！");
-        return nil;
+        NSLog(@"长度不一致。不能进行模二加！尝试取最小的那一组bytes的长度");
+        if (len1 > len2) {
+            len1 = len2;
+        }
     }
     
     Byte ByteXOR[len1];

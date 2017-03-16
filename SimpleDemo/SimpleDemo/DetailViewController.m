@@ -317,7 +317,9 @@
     CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
     CGColorRef color = CGColorCreate(colorSpaceRef, (CGFloat[]){0,0.5,1,1});
     [self.SendHexDataButton.layer setBorderColor:color];
+    
     CGColorRelease(color);
+    CGColorSpaceRelease(colorSpaceRef);
     
     [self configureView];
 }
