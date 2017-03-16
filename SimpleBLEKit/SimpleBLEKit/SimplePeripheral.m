@@ -495,7 +495,6 @@
         [_dataDescription appendData:characteristic.value];
         dispatch_async(dispatch_get_main_queue(), ^{
             
-            if(_isLog) NSLog(@"已经收到的全部数据:%@",[_dataDescription getPacketData]);
             if ([_dataDescription isValidPacket]) {//完整包
                 
                 //取消定时器
