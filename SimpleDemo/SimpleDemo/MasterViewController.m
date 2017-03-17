@@ -78,6 +78,8 @@
     [[BLEManager getInstance] stopScan];
     [[BLEManager getInstance] startScan:^(SimplePeripheral * _Nonnull peripheral) {
         
+        if([self.objects containsObject:peripheral])
+            return;
         [self.objects insertObject:peripheral atIndex:0];
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
         [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
