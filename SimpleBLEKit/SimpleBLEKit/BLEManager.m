@@ -12,10 +12,13 @@
     BOOL isPowerON;
 }
 
+
 @property (strong, nonatomic) CBCentralManager  *centralManager;
 @property (nonatomic,copy) SearchBlock MysearchBLEBlock;
 @property (strong,nonatomic) NSMutableDictionary *Device_dict;
-@property (strong, nonatomic) NSMutableArray  *searchedDeviceUUIDArray;
+@property (strong, nonatomic) NSMutableDictionary  *searchedDeviceUUIDArray;
+@property (assign,nonatomic) BOOL isLogOn;
+
 @end
 
 @implementation BLEManager
@@ -30,6 +33,7 @@
     dispatch_queue_t _centralManagerQueue = dispatch_queue_create("com.zbh.SimpleBLEKit.centralManagerQueue", 0);
     _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:_centralManagerQueue];
     isPowerON = NO;
+    _isLogOn = NO;
     return self;
 }
 
@@ -73,17 +77,19 @@
     _MysearchBLEBlock = searchBLEBlock;
     _centralManager.delegate = self;
     if (_searchedDeviceUUIDArray==nil) {
-        _searchedDeviceUUIDArray = [[NSMutableArray alloc] init];
+        _searchedDeviceUUIDArray = [[NSMutableDictionary alloc] init];
     }else{
         [_searchedDeviceUUIDArray removeAllObjects];
     }
     //将已经连接的设备也上报
     dispatch_async(dispatch_get_main_queue(), ^{
         
+        if(_isLogOn) NSLog(@"搜索前，上报设备池中已连接的外设...");
         for (NSString *key in _Device_dict) {
             
             SimplePeripheral *peripheral = _Device_dict[key];
             if ([peripheral isConnected]) {
+                if(_isLogOn) NSLog(@"上报%@",[peripheral getPeripheralName]);
                 if (_MysearchBLEBlock) {
                     _MysearchBLEBlock(peripheral);
                 }
@@ -92,7 +98,7 @@
     });
     if (interval>0) {
         [NSTimer scheduledTimerWithTimeInterval:interval repeats:NO block:^(NSTimer * _Nonnull timer) {
-            NSLog(@"定时器触发停止搜索");
+            if(_isLogOn) NSLog(@"定时器触发停止搜索");
             [self stopScan];
         }];
     }
@@ -110,9 +116,9 @@
 - (void) centralManagerDidUpdateState:(CBCentralManager *)central
 {
     if (_centralManager.state==5) {//CBManagerStatePoweredOn
-        NSLog(@"本地蓝牙状态正常");
+        if(_isLogOn) NSLog(@"本地蓝牙状态正常");
     }else{
-        NSLog(@"本地蓝牙状态异常");
+        if(_isLogOn) NSLog(@"本地蓝牙状态异常");
     }
 }
 
@@ -126,15 +132,17 @@
         return;
     }
     //上报发现的设备
-    NSLog(@"搜索到设备:%@",peripheral.name);
+    if(_isLogOn) NSLog(@"搜索到设备:%@",peripheral.name);
+    
     //过滤当次搜索重复的设备
-    for (NSString *uuid in _searchedDeviceUUIDArray) {
-        if ([uuid isEqualToString:[peripheral.identifier UUIDString]]){
-            NSLog(@"此设备 %@ 的UUID相同，此次搜索不再上报",peripheral.name);
-            return;
-        }
+    NSString *name = [_searchedDeviceUUIDArray valueForKey:[peripheral.identifier UUIDString]];
+    if (name!=nil) {
+        if(_isLogOn) NSLog(@"此设备 %@ 的UUID相同，此次搜索不再上报",peripheral.name);
+        return;
+    }else{
+        [_searchedDeviceUUIDArray setValue:peripheral.name forKey:[peripheral.identifier UUIDString]];
     }
-    [_searchedDeviceUUIDArray addObject:[peripheral.identifier UUIDString]];
+    
     
     //组装外设对象
     SimplePeripheral *simplePeripheral = [_Device_dict valueForKey:[peripheral.identifier UUIDString]];
@@ -145,9 +153,10 @@
         
     }
     else{
-        NSLog(@"这是设备池中持有的对象，取出来上报");
+        if(_isLogOn) NSLog(@"这是设备池中持有的对象");
     }
     [simplePeripheral setPeripheral:peripheral];
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         if (_MysearchBLEBlock) {
             _MysearchBLEBlock(simplePeripheral);

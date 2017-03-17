@@ -24,7 +24,7 @@
     navigationController.topViewController.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem;
     splitViewController.delegate = self;
     
-    [BLEManager getInstance];//初始化
+    [[BLEManager getInstance] setIsLogOn:YES];//初始化
     
     return YES;
 }

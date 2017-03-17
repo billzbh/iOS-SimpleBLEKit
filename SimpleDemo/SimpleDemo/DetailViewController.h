@@ -7,11 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MasterViewController.h"
 #import <SimpleBLEKit/SimplePeripheral.h>
 
 @interface DetailViewController : UIViewController
 
 @property (strong, nonatomic) SimplePeripheral *selectedPeripheral;
+@property (weak,nonatomic) MasterViewController *weakMasterself;
 
 @property (weak, nonatomic) IBOutlet UITextField *serviceUuid;
 @property (weak, nonatomic) IBOutlet UITextField *notifyUuid;

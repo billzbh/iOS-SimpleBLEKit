@@ -30,6 +30,7 @@
 @property (assign,nonatomic) BOOL isLog;
 @property (assign,nonatomic) BOOL isAutoReconnect;
 @property (assign,nonatomic) BOOL isAck;
+@property (assign,nonatomic) BOOL isWorking;
 @property (strong,nonatomic) NSData *AckData;
 @end
 
@@ -49,6 +50,7 @@
     _isAutoReconnect =NO;
     _isAck = NO;
     _MTU = -1;
+    _isWorking = NO;
     _ResponseType = CBCharacteristicWriteWithoutResponse;
     return self;
 }
@@ -244,9 +246,15 @@
 //3. 一次发送数据，持续收数据包，填前两个参数，第三个参数-1 
 -(void)sendData:(NSData *)data receiveData:(receiveDataBlock)callback Timeout:(NSTimeInterval)timeInterval{
     
+    _callbackData = callback;
+    if (_isWorking) {
+        if (_callbackData)
+            _callbackData(nil,@"上一个指令还未完成，无法响应新指令");
+        return;
+    }
+    
     [_dataDescription clearData];
     isTimeout = NO;
-    _callbackData = callback;
     
     if(_isLog) NSLog(@"发送指令，等待响应中...");
     
@@ -271,9 +279,12 @@
     dispatch_async(dispatch_get_main_queue(), ^{ //解决多线程写数据冲突的问题，使用main_queue进行排队
         
         if (_writeCharacteristic ==nil) {
+            if (_callbackData)
+                _callbackData(nil,@"写特征为nil，可能外设SimplePeripheral找不到此特征");
             return;
         }
         
+        _isWorking = YES;
         if (_MTU <= 0 ) {//直接发送
             
             [self.peripheral writeValue:data
@@ -309,9 +320,10 @@
         self.pendingRequestTimeoutTimer = nil;
     }
     isTimeout = YES;
+    _isWorking = NO;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (_callbackData)
-            _callbackData(nil,@"指令响应超时");
+            _callbackData(nil,@"SDK指令响应超时");
     });
 }
 
@@ -426,15 +438,6 @@
                 isNotifyReady = YES;
                 if (isWriteReady){
                     if(_isLog) NSLog(@"已经搜索到写特征,跳出查找循环");
-                    
-                    //通知成功前，提前做一些事情
-                    [self setupDeviceAfterConnected];
-                    
-                    if(_isLog) NSLog(@"当前连接设备为:%@",_peripheral.name);
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if(_MyStatusBlock!=nil)
-                            _MyStatusBlock(YES);
-                    });
                     break;
                 }
                 else{
@@ -448,13 +451,6 @@
                 isWriteReady = YES;
                 if (isNotifyReady){
                     if(_isLog) NSLog(@"已经搜索到读特征,跳出查找循环");
-                    //通知成功前，提前做一些事情
-                    [self setupDeviceAfterConnected];
-                    if(_isLog) NSLog(@"当前连接设备为:%@",_peripheral.name);
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if(_MyStatusBlock!=nil)
-                            _MyStatusBlock(YES);
-                    });
                     break;
                 }
                 else{
@@ -462,6 +458,23 @@
                     continue;
                 }
             }
+        }
+        
+        //跳出循环后
+        if(isWriteReady && isNotifyReady){
+            //通知成功前，提前做一些事情
+            [self setupDeviceAfterConnected];
+            if(_isLog) NSLog(@"当前连接设备为:%@",_peripheral.name);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if(_MyStatusBlock!=nil)
+                    _MyStatusBlock(YES);
+            });
+        }else{
+            if(_isLog) NSLog(@"未找到想要的%@特征:%@",isWriteReady==NO?@"写":@"读",isWriteReady==NO?_WriteUUID:_NotifyUUID);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if(_MyStatusBlock!=nil)
+                    _MyStatusBlock(NO);
+            });
         }
     }
 }
@@ -475,17 +488,6 @@
     }
     
     if(_isLog) NSLog(@"%@特征收到数据:%@",_NotifyUUID,characteristic.value);
-    if (_isAck && _AckData!=nil && [_dataDescription isNeedToACK]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [self.peripheral writeValue:_AckData
-                      forCharacteristic:self.writeCharacteristic
-                                   type:_ResponseType];
-            if(_isLog) NSLog(@"我赶紧回了一个应答:%@",_AckData);
-            
-        });
-    };
-    
     if(isTimeout){
         if(_isLog) NSLog(@"指令响应已经超时，收到数据也直接返回");
         return;
@@ -493,6 +495,18 @@
     if([characteristic.UUID isEqual:[CBUUID UUIDWithString:_NotifyUUID]]) {
         
         [_dataDescription appendData:characteristic.value];
+        
+        if (_isAck && _AckData!=nil && [_dataDescription isNeedToACK]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                [self.peripheral writeValue:_AckData
+                          forCharacteristic:self.writeCharacteristic
+                                       type:_ResponseType];
+                if(_isLog) NSLog(@"我赶紧回了一个应答:%@",_AckData);
+                
+            });
+        };
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             
             if ([_dataDescription isValidPacket]) {//完整包
@@ -504,6 +518,7 @@
                 }
                 
                 if(_isLog) NSLog(@"包完整性验证OK");
+                _isWorking = NO;
                 if (_callbackData) {
                     _callbackData([_dataDescription getPacketData],nil);
                 }

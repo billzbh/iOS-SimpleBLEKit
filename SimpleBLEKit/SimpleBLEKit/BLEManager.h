@@ -21,6 +21,7 @@
 
 -(void)DisconnectAll;
 
+-(void)setIsLogOn:(BOOL)isLogOn;
 
 /**
  将16进制格式的字符串转为二进制，例如 "11ABCD",内存中数据为: {0x31,0x31,0x41,0x42,0x43,0x44}实际占用6字节.

@@ -36,20 +36,24 @@
 - (IBAction)ConnectOrDisconnectAction:(id)sender {
     
 
-    if(self.connectOrDisconnect.tag == 1)
-        [_selectedPeripheral disconnect];
-    
-    [self.connectOrDisconnect setEnabled:NO];
-    [[BLEManager getInstance] stopScan];
+    if(![_selectedPeripheral isKindOfClass:[SimplePeripheral class]])
+        return;
     NSString * serviceuuid =  self.serviceUuid.text;
     NSString * notifyuuid =  self.notifyUuid.text;
     NSString * writeuuid =  self.writeUuid.text;
     NSString * mtuStr =  self.MTU.text;
     int mtu = [mtuStr intValue];
-//    NSString * regularExp =  self.regularExp.text;
+    //    NSString * regularExp =  self.regularExp.text;
     
     
     
+    
+    
+    [[BLEManager getInstance] stopScan];
+    if(self.connectOrDisconnect.tag == 1){
+        [_selectedPeripheral disconnect];
+        return;
+    }
     //发起连接前，对外设做各项设置(可选)
     if (_isSetMTU.isOn) {
         [_selectedPeripheral setMTU:mtu];
@@ -128,18 +132,10 @@
         
         NSLog(@"设备%@",isPrepareToCommunicate?@"已连接":@"已断开");
         
-        if(isPrepareToCommunicate){
-            [self.connectOrDisconnect setTitle:@"断开设备" forState:UIControlStateNormal];
-            self.connectOrDisconnect.tag = 1;
-        }else{
-            [self.connectOrDisconnect setTitle:@"连接设备" forState:UIControlStateNormal];
-            self.connectOrDisconnect.tag = 0;//UI默认，tag作为动作区分连接还是断开
-        }
-        [self.connectOrDisconnect setEnabled:YES];
+        [self.connectOrDisconnect setTitle:isPrepareToCommunicate?@"断开设备":@"连接设备" forState:UIControlStateNormal];
+        self.connectOrDisconnect.tag = isPrepareToCommunicate?1:0;
+        [_weakMasterself connectStatus];
     }];
-    
-    
-    
 }
 
 
@@ -293,11 +289,13 @@
 //    
 //}
 
-- (void)configureView {
+- (void)configureView {//配置当前视图
     // Update the user interface for the detail item.
     if (_selectedPeripheral) {
         self.navigationItem.title =[_selectedPeripheral getPeripheralName];
     }
+    [self.connectOrDisconnect setTitle:[_selectedPeripheral isConnected]?@"断开设备":@"连接设备" forState:UIControlStateNormal];
+    self.connectOrDisconnect.tag = [_selectedPeripheral isConnected]?1:0;
 }
 
 

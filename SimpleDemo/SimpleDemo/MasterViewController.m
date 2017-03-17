@@ -12,7 +12,7 @@
 
 @interface MasterViewController ()
 
-@property NSMutableArray *objects;
+@property (strong,atomic) NSMutableArray *objects;
 @end
 
 @implementation MasterViewController
@@ -93,12 +93,23 @@
         
         SimplePeripheral *object = self.objects[indexPath.row];
         DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+        [controller setWeakMasterself:self];
         [controller setSelectedPeripheral:object];
+        
         controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
         controller.navigationItem.leftItemsSupplementBackButton = YES;
     }
 }
 
+-(void)connectStatus
+{
+
+    DetailViewController *controller = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+    [controller.connectOrDisconnect setTitle:[controller.selectedPeripheral isConnected]?@"断开设备":@"连接设备" forState:UIControlStateNormal];
+    controller.connectOrDisconnect.tag = [controller.selectedPeripheral isConnected]?1:0;
+    
+    [self.tableView reloadData];
+}
 
 #pragma mark - Table View
 
@@ -117,6 +128,7 @@
 
     SimplePeripheral *object = self.objects[indexPath.row];
     cell.textLabel.text = [object getPeripheralName];
+    cell.accessoryType = [object isConnected]?UITableViewCellAccessoryCheckmark:UITableViewCellAccessoryNone;
     return cell;
 }
 
