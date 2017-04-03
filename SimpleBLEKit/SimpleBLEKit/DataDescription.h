@@ -11,17 +11,19 @@
 
 @interface DataDescription : NSObject
 
--(void)clearData;
+-(void)clearData:(NSString * _Nonnull)uuidString;
 
--(void)appendData:(NSData* _Nonnull)data;
+-(void)appendData:(NSData* _Nonnull)data uuid:(NSString * _Nonnull)uuidString;
 
--(void)setResponseEvaluator:(PacketEvaluator _Nonnull)responseEvaluator;
+-(NSData * _Nonnull)getPacketData:(NSString * _Nonnull)uuidString;
 
--(void)setNeekAckEvaluator:(PacketEvaluator _Nonnull)ackEvaluator;
 
--(BOOL)isValidPacket;//每次调用都会调用PacketEvaluator块函数解析是否收包正确。如果正确就通知，失败继续直到超时
--(BOOL)isNeedToACK;//每次调用都会调用PacketEvaluator块函数解析是否需要回ACK
+-(void)setPacketVerifyEvaluator:(PacketVerifyEvaluator _Nonnull)packetVerifyEvaluator;
 
--(NSData * _Nonnull)getPacketData;
+-(void)setNeekAckEvaluator:(NeekAckEvaluator _Nonnull)ackEvaluator;
+
+-(BOOL)isValidPacket:(NSString * _Nonnull)uuidString;//每次调用都会调用PacketEvaluator块函数解析是否收包正确。如果正确就通知，失败继续直到超时
+
+-(BOOL)isNeedToACK:(NSString * _Nonnull)uuidString;//每次调用都会调用PacketEvaluator块函数解析是否需要回ACK
 
 @end

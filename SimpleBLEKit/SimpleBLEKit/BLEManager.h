@@ -12,16 +12,29 @@
 #import "Typedef.h"
 
 @interface BLEManager : NSObject
-
+//单例对象
 + (BLEManager * _Nonnull)getInstance;
 
+//初始化并决定是否打印管理对象的log
+-(void)setIsLogOn:(BOOL)isLogOn;
+
+//搜索功能
 -(void)startScan:(SearchBlock _Nonnull)searchBLEBlock timeout:(NSTimeInterval)interval;
 
+//停止搜索
 -(void)stopScan;
 
--(void)DisconnectAll;
+//返回此BLEManager对象管理的所有已连接外设
+-(NSArray<SimplePeripheral *>* _Nonnull)connectPeripherals;
 
--(void)setIsLogOn:(BOOL)isLogOn;
+//断开所有本BLEManager对象管理的连接。不会也不能断开其他非本对象管理的BLE设备
+-(void)disconnectAll;
+-(void)disconnectWithPrefixName:(NSString * _Nonnull)name;
+
+
+
+#pragma mark - NSData 静态方法，也可以写成一个NSData/NSString扩展
+#pragma mark
 
 /**
  将16进制格式的字符串转为二进制，例如 "11ABCD",内存中数据为: {0x31,0x31,0x41,0x42,0x43,0x44}实际占用6字节.
