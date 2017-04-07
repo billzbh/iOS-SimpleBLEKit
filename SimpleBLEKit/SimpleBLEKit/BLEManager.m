@@ -55,7 +55,8 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[BLEManager alloc] init];
-        NSLog(@"SimpleBLEKit Version: V1.17.314");
+//        NSLog(@"SimpleBLEKit Version: V1.17.314");
+        NSLog(@"SimpleBLEKit Version: V1.17.407");
     });
     return sharedInstance;
 }
@@ -133,16 +134,17 @@
         [_searchedDeviceUUIDArray removeAllObjects];
     }
     //将已经连接的设备也上报
+    __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         
         if(_isLogOn) NSLog(@"搜索前，上报设备池中已连接的外设...");
-        for (NSString *key in _Device_dict) {
+        for (NSString *key in weakself.Device_dict) {
             
-            SimplePeripheral *peripheral = _Device_dict[key];
+            SimplePeripheral *peripheral = weakself.Device_dict[key];
             if ([peripheral isConnected]) {
                 if(_isLogOn) NSLog(@"└┈上报%@",[peripheral getPeripheralName]);
-                if (_MysearchBLEBlock) {
-                    _MysearchBLEBlock(peripheral);
+                if (weakself.MysearchBLEBlock) {
+                    weakself.MysearchBLEBlock(peripheral);
                 }
             }
         }
@@ -150,7 +152,7 @@
     if (interval>0) {
         [NSTimer scheduledTimerWithTimeInterval:interval repeats:NO block:^(NSTimer * _Nonnull timer) {
             if(_isLogOn) NSLog(@"定时器触发停止搜索");
-            [self stopScan];
+            [weakself stopScan];
             [timer invalidate];
             timer = nil;
         }];
@@ -209,10 +211,11 @@
     }
     if(_isLogOn) NSLog(@"└┈搜索到设备:%@(上报应用层)",peripheral.name);
     [simplePeripheral setPeripheral:peripheral];
+    __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        if (_MysearchBLEBlock) {
-            _MysearchBLEBlock(simplePeripheral);
+        if (weakself.MysearchBLEBlock) {
+            weakself.MysearchBLEBlock(simplePeripheral);
         }
     });
 }
@@ -222,7 +225,7 @@
 #pragma mark - 静态方法
 #pragma mark 
 
-+ (NSString *)oneTwoData:(NSData *)sourceData
++ (NSString *)NSData2hexString:(NSData *)sourceData
 {
     Byte *inBytes = (Byte *)[sourceData bytes];
     NSMutableString *resultData = [[NSMutableString alloc] initWithCapacity:2048];
@@ -233,10 +236,10 @@
     return resultData;
 }
 
-+ (NSData *)twoOneData:(NSString *)sourceString
++ (NSData *)hexString2NSData:(NSString *)hexString
 {
     Byte tmp, result;
-    Byte *sourceBytes = (Byte *)[sourceString UTF8String];
+    Byte *sourceBytes = (Byte *)[hexString UTF8String];
     
     NSMutableData *resultData = [[NSMutableData alloc] init];
     

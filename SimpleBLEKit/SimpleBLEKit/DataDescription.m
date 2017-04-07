@@ -73,19 +73,24 @@
 -(void)setNeekAckEvaluator:(NeekAckEvaluator)ackEvaluator
 {
     if (ackEvaluator==nil) {
-        _ackEvaluator = ^BOOL(NSData *d){ return [d length] > 0; };
+        _ackEvaluator = ^BOOL(NSData *d){ return NO; };
     }else{
         _ackEvaluator = ackEvaluator;
     }
 }
 
 -(BOOL)isValidPacket:(NSString *)uuidString{
-    
+    if (_responseEvaluator==nil) {
+        _responseEvaluator = ^BOOL(NSData *d){ return [d length] > 0; };
+    }
     _inputData = [_inputDataDict objectForKey:uuidString];
     return _responseEvaluator(_inputData);
 }
 
 -(BOOL)isNeedToACK:(NSString *)uuidString{
+    if (_ackEvaluator==nil) {
+        _ackEvaluator = ^BOOL(NSData *d){ return NO; };
+    }
     _inputData = [_inputDataDict objectForKey:uuidString];
     return _ackEvaluator(_inputData);
 }

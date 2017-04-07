@@ -39,10 +39,10 @@
 /**
  将16进制格式的字符串转为二进制，例如 "11ABCD",内存中数据为: {0x31,0x31,0x41,0x42,0x43,0x44}实际占用6字节.
  转化后内存中数据: {0x11,0xAB,0xCD},实际占用3字节
- @param sourceString hexString格式的字符串
+ @param hexString hexString格式的字符串
  @return data内存原始数据
  */
-+ (NSData * _Nonnull)twoOneData:(NSString * _Nonnull)sourceString;
++ (NSData * _Nonnull)hexString2NSData:(NSString * _Nonnull)hexString;
 
 
 /**
@@ -51,7 +51,7 @@
  @param sourceData 内存原始数据
  @return hexString格式字符串
  */
-+ (NSString * _Nonnull)oneTwoData:(NSData * _Nonnull)sourceData;
++ (NSString * _Nonnull)NSData2hexString:(NSData * _Nonnull)sourceData;
 
 
 //将两个字节3X 3X 转换--》XX（一个字节）（例如0x31 0x3b ----》 0x1b ）有点类似压缩BCD

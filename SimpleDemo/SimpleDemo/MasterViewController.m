@@ -56,7 +56,7 @@
     //确定按钮
     UIAlertAction *destructiveAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
         [[BLEManager getInstance] stopScan];
-        [[BLEManager getInstance] DisconnectAll];
+        [[BLEManager getInstance] disconnectAll];
     }];
     [alertController addAction:destructiveAction];
     [self presentViewController:alertController animated:YES completion:nil];

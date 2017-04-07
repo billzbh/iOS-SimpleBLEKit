@@ -18,14 +18,15 @@
 #pragma mark - UI action 外设设置
 
 - (IBAction)LogOn:(UISwitch *)sender {
-    [self.selectedPeripheral setIsLog:sender.isOn];
+    [self.selectedPeripheral setIsLog:sender.isOn];//可选
 }
 
 - (IBAction)AutoReconnect:(UISwitch *)sender {
-    [self.selectedPeripheral setIsAutoReconnect:sender.isOn];
+    [self.selectedPeripheral setIsAutoReconnect:sender.isOn];//可选
 }
 
 - (IBAction)writeResponseType:(UISwitch *)sender {
+    //可选
     if (sender.isOn) {
         [self.selectedPeripheral setResponseType:CBCharacteristicWriteWithResponse];
     }else{
@@ -46,32 +47,39 @@
     //    NSString * regularExp =  self.regularExp.text;
     
     
-    
-    
-    
     [[BLEManager getInstance] stopScan];
     if(self.connectOrDisconnect.tag == 1){
         [_selectedPeripheral disconnect];
         return;
     }
-    //发起连接前，对外设做各项设置(可选)
+    
+    
+    //发起连接前，对外设做各项设置(可选) === start ===
     if (_isSetMTU.isOn) {
         [_selectedPeripheral setMTU:mtu];
     }
     NSData *ackData = [NSData dataWithBytes:"\x06" length:1];
-    [_selectedPeripheral setAck:YES withData:ackData withACKEvaluator:^BOOL(NSData * _Nullable inputData) {
-        if (inputData.length>0) {
+    [_selectedPeripheral setAckData:ackData withWC:writeuuid withACKEvaluator:^BOOL(NSData * _Nullable inputData) {
+        if (inputData.length>2) {
             return YES;
         }
         return NO;
     }];
+    //加快搜索服务和特征速度，间接加快连接速度.
+    [_selectedPeripheral setServiceAndCharacteristicsDictionary:@{serviceuuid:@[writeuuid,notifyuuid],@"180A":@[@"2A23",@"2A29"]}];
+    //其他可选设置
+//    [_selectedPeripheral setIsLog:NO];
+//    [_selectedPeripheral setMTU:20];
+//    [_selectedPeripheral setResponseType:CBCharacteristicWriteWithoutResponse];
+    //发起连接前，对外设做各项设置(可选) === end ===
+    
     
     
     
     //以下的方法连接前必须调用
-    [_selectedPeripheral setServiceUUID:serviceuuid Notify:notifyuuid Write:writeuuid];
     //收包完整性验证: 传入block，写上收包完整的逻辑，返回YES时认为包完整。
-    [_selectedPeripheral setResponseEvaluator:^BOOL(NSData * _Nullable inputData) {
+    
+    [_selectedPeripheral setPacketVerifyEvaluator:^BOOL(NSData * _Nullable inputData) {
         
         Byte *packBytes = (Byte*)[inputData bytes];
         if (packBytes[0]!=0x02) {
@@ -123,17 +131,16 @@
         if ( checkCode ) {
             return NO;
         }
-        
         return YES;
-        
     }];
     //开始连接
+    __weak typeof(self) weakself = self;
     [_selectedPeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
         
-        NSLog(@"设备%@",isPrepareToCommunicate?@"已连接":@"已断开");
+        NSLog(@"设备连接%@",isPrepareToCommunicate?@"成功":@"失败");
         
-        [self.connectOrDisconnect setTitle:isPrepareToCommunicate?@"断开设备":@"连接设备" forState:UIControlStateNormal];
-        self.connectOrDisconnect.tag = isPrepareToCommunicate?1:0;
+        [weakself.connectOrDisconnect setTitle:isPrepareToCommunicate?@"断开设备":@"连接设备" forState:UIControlStateNormal];
+        weakself.connectOrDisconnect.tag = isPrepareToCommunicate?1:0;
         [_weakMasterself connectStatus];
     }];
 }
@@ -150,24 +157,20 @@
 - (IBAction)sendHexDataAction:(id)sender {
     
     NSString *hexString = self.sendHexString.text;
-    NSData *data = [BLEManager twoOneData:hexString];
-    [_selectedPeripheral sendData:data receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
+    NSData *data = [BLEManager hexString2NSData:hexString];
+    NSString * notifyuuid =  self.notifyUuid.text;
+    NSString * writeuuid =  self.writeUuid.text;
+    
+    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
         
         if(error){
             self.notifyTextview.text = [NSString stringWithFormat:@"%@",error];
         }else{
-            NSString *out = [NSString stringWithFormat:@"%@从%@收到的包完整数据:\n%@\n",[self getTimeNow],[_selectedPeripheral getPeripheralName],[BLEManager oneTwoData:outData]];
+            NSString *out = [NSString stringWithFormat:@"%@从%@收到的包完整数据:\n%@\n",[self getTimeNow],[_selectedPeripheral getPeripheralName],[BLEManager NSData2hexString:outData]];
             [self.notifyTextview.textStorage.mutableString appendString:out];
         }
-        
-    } Timeout:-1];
+    }];
 }
-
-
-
-
-
-
 
 
 
