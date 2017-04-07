@@ -19,7 +19,8 @@
 -(void)setResponseMatch:(NSString* _Nonnull)prefixString
            sufferString:(NSString* _Nonnull)sufferString
      NSDataExpectLength:(int)expectLen;
-//设置要搜索的服务UUIDStrings以及其服务管辖的特征UUIDStrings
+
+//连接设备
 -(void)connectDevice:(BLEStatusBlock _Nullable)myStatusBlock;
 
 #pragma mark - 通讯方法
@@ -41,10 +42,6 @@
          withNC:(NSString* _Nonnull)notifyUUIDString
         timeout:(double)timeInterval
     receiveData:(receiveDataBlock _Nonnull)callback;
-
-//不断监听数据更新
--(BOOL)updateValue:(updateDataBlock _Nullable)callback withNC:(NSString* _Nonnull)notifyUUIDString;
-
 
 #pragma mark - 常用方法
 //蓝牙名称

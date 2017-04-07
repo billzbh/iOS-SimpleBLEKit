@@ -61,6 +61,18 @@
     return sharedInstance;
 }
 
+//如果外设名称不同，可以通过这个获取到已连接的外设
+-(SimplePeripheral *)connectPeripheral:(NSString *)BLE_Name{
+    NSArray *array = [_Device_dict allValues];
+    for (SimplePeripheral *peripheral in array) {
+        if ([peripheral isConnected] && [[peripheral getPeripheralName] hasPrefix:BLE_Name]) {
+            return peripheral;
+        }
+    }
+    return nil;
+}
+
+//返回本管理对象BLEManager的所有已连接对象
 -(NSArray<SimplePeripheral *>*)connectPeripherals
 {
     return [self connectPeripheralsWithServices:nil];
@@ -101,6 +113,18 @@
     return connectedDevices;
 }
 
+-(void)connectDevice:(SimplePeripheral *)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock
+{
+    [simplePeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
+        
+        if (isPrepareToCommunicate) {
+            //如果自己公司的SDK要兼容几种不同协议的外设
+            //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
+            //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
+        }
+        myStatusBlock(isPrepareToCommunicate);
+    }];
+}
 
 -(void)disconnectAll{
     

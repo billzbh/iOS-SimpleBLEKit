@@ -346,6 +346,19 @@
         }
     });
 }
+ 
+ //不断监听数据更新
+ -(BOOL)updateValue:(updateDataBlock _Nullable)callback withNC:(NSString* _Nonnull)notifyUUIDString
+ {
+     CBCharacteristic* characteristic = [_Characteristics objectForKey:notifyUUIDString];
+     if (characteristic ==nil || !characteristic.isNotifying) {
+        return NO;
+     }
+     [_dataDescription clearData:notifyUUIDString];
+     _continueNotifyUUIDString = notifyUUIDString;
+     _callbackUpdateData = callback;
+     return YES;
+ }
  */
 
 
@@ -375,7 +388,7 @@
             isFinish = YES;
             break;
         }
-        usleep(20000);
+        usleep(30000);
     }
     
     if (!isFinish) {
@@ -408,19 +421,6 @@
             });
         }
     });
-}
-
-//不断监听数据更新
--(BOOL)updateValue:(updateDataBlock _Nullable)callback withNC:(NSString* _Nonnull)notifyUUIDString
-{
-    CBCharacteristic* characteristic = [_Characteristics objectForKey:notifyUUIDString];
-    if (characteristic ==nil || !characteristic.isNotifying) {
-        return NO;
-    }
-    [_dataDescription clearData:notifyUUIDString];
-    _continueNotifyUUIDString = notifyUUIDString;
-    _callbackUpdateData = callback;
-    return YES;
 }
 
 
@@ -623,19 +623,18 @@
     if(_isLog) NSLog(@"%@特征收到数据:%@",uuidString,characteristic.value);
     
     [_dataDescription appendData:characteristic.value uuid:uuidString];//这里不断收集数据。
-    
-    if ([_continueNotifyUUIDString isEqualToString:uuidString]) {
-        if ([_dataDescription isValidPacket:uuidString]) {
-            
-            __weak typeof(self) weakself = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                weakself.callbackUpdateData([weakself.dataDescription getPacketData:uuidString]);
-                if(weakself.isLog) NSLog(@"%@更新了一包数据:%@",uuidString,[weakself.dataDescription getPacketData:uuidString]);
-            });
-            [_dataDescription clearData:uuidString];
-        }
-    }
-    
+
+//    if ([_continueNotifyUUIDString isEqualToString:uuidString]) {
+//        if ([_dataDescription isValidPacket:uuidString]) {
+//            
+//            __weak typeof(self) weakself = self;
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                weakself.callbackUpdateData([weakself.dataDescription getPacketData:uuidString]);
+//                if(weakself.isLog) NSLog(@"%@更新了一包数据:%@",uuidString,[weakself.dataDescription getPacketData:uuidString]);
+//            });
+//            [_dataDescription clearData:uuidString];
+//        }
+//    }
     if (_AckData!=nil && _AckWriteCharacteristicUUIDString!=nil && [_dataDescription isNeedToACK:uuidString]) {
         
         __weak typeof(self) weakself = self;

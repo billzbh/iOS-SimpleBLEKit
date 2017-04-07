@@ -24,8 +24,14 @@
 //停止搜索
 -(void)stopScan;
 
+//连接设备
+-(void)connectDevice:(SimplePeripheral * _Nonnull)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock;
+
 //返回此BLEManager对象管理的所有已连接外设
 -(NSArray<SimplePeripheral *>* _Nonnull)connectPeripherals;
+
+//如果外设名称不同，可以通过名称从设备池中获取到已连接的外设
+-(SimplePeripheral *_Nullable)connectPeripheral:(NSString *_Nonnull)BLE_Name;
 
 //断开所有本BLEManager对象管理的连接。不会也不能断开其他非本对象管理的BLE设备
 -(void)disconnectAll;

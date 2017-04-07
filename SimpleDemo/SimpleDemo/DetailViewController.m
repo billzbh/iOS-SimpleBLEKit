@@ -60,7 +60,7 @@
     }
     NSData *ackData = [NSData dataWithBytes:"\x06" length:1];
     [_selectedPeripheral setAckData:ackData withWC:writeuuid withACKEvaluator:^BOOL(NSData * _Nullable inputData) {
-        if (inputData.length>2) {
+        if (inputData.length>16) {
             return YES;
         }
         return NO;
@@ -78,7 +78,6 @@
     
     //以下的方法连接前必须调用
     //收包完整性验证: 传入block，写上收包完整的逻辑，返回YES时认为包完整。
-    
     [_selectedPeripheral setPacketVerifyEvaluator:^BOOL(NSData * _Nullable inputData) {
         
         Byte *packBytes = (Byte*)[inputData bytes];
@@ -135,7 +134,8 @@
     }];
     //开始连接
     __weak typeof(self) weakself = self;
-    [_selectedPeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
+    
+    [[BLEManager getInstance] connectDevice:_selectedPeripheral callback:^(BOOL isPrepareToCommunicate) {
         
         NSLog(@"设备连接%@",isPrepareToCommunicate?@"成功":@"失败");
         
