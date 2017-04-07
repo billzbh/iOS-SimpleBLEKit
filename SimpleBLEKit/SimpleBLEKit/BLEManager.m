@@ -115,6 +115,7 @@
 
 -(void)connectDevice:(SimplePeripheral *)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock
 {
+//    __weak typeof(self) weakself = self;//记得防止block循环引用
     [simplePeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
         
         if (isPrepareToCommunicate) {

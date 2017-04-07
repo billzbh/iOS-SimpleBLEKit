@@ -209,17 +209,11 @@
         [_Characteristics removeAllObjects];
     }
     
-    _centralManager.delegate = nil;
     if (self.peripheral) {
         [_centralManager cancelPeripheralConnection:self.peripheral];
     }
     
-    __weak typeof(self) weakself = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if(weakself.isLog) NSLog(@"主动断开连接");
-        if(weakself.MyStatusBlock!=nil)
-            weakself.MyStatusBlock(NO);
-    });
+    if(_isLog) NSLog(@"主动断开连接");
 }
 
 
@@ -463,12 +457,12 @@
     return;
 }
 
-//（被动）断开连接的回调结果
+//（主动被动）断开连接的回调结果
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral
                   error:(NSError *)error
 {
 
-    if(_isLog) NSLog(@"设备断开连接:\n %@",error);
+    if(_isLog) NSLog(@"%@断开连接:\n %@",error==nil?@"iOS蓝牙中央设备":@"远端蓝牙外设",error);
     __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         if(weakself.MyStatusBlock!=nil)

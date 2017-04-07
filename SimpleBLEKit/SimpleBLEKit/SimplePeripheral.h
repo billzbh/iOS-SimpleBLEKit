@@ -20,9 +20,6 @@
            sufferString:(NSString* _Nonnull)sufferString
      NSDataExpectLength:(int)expectLen;
 
-//连接设备
--(void)connectDevice:(BLEStatusBlock _Nullable)myStatusBlock;
-
 #pragma mark - 通讯方法
 //1. 只发送
 //2. 发送接收(同步与异步)
