@@ -15,8 +15,14 @@
 //单例对象
 + (BLEManager * _Nonnull)getInstance;
 
+//获取SDK版本
+-(NSString * _Nonnull)getSDKVersion;
+
 //初始化并决定是否打印管理对象的log
 -(void)setIsLogOn:(BOOL)isLogOn;
+
+//设置要搜索的设备的service UUID，搜索时会把系统中符合此uuids的已经连接的设备也上报。
+-(void)setServiceUUIDsForSystemConnectdDevices:(NSArray<NSString *>* _Nullable)services;
 
 //搜索功能
 -(void)startScan:(SearchBlock _Nonnull)searchBLEBlock timeout:(NSTimeInterval)interval;
@@ -27,16 +33,19 @@
 //连接设备
 -(void)connectDevice:(SimplePeripheral * _Nonnull)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock;
 
-//返回此BLEManager对象管理的所有已连接外设
--(NSArray<SimplePeripheral *>* _Nonnull)connectPeripherals;
 
+//返回此BLEManager对象管理的所有已连接外设
+-(NSArray<SimplePeripheral *>* _Nonnull)getConnectPeripherals;
 //如果外设名称不同，可以通过名称从设备池中获取到已连接的外设
--(SimplePeripheral *_Nullable)connectPeripheral:(NSString *_Nonnull)BLE_Name;
+-(SimplePeripheral *_Nullable)getConnectPeripheralWithPrefixName:(NSString *_Nonnull)BLE_Name;
+//可以通过uuid从设备池中获取到已连接的外设
+-(SimplePeripheral *_Nullable)getConnectPeripheralWithUUIDString:(NSString *_Nonnull)uuid;
+
 
 //断开所有本BLEManager对象管理的连接。不会也不能断开其他非本对象管理的BLE设备
 -(void)disconnectAll;
 -(void)disconnectWithPrefixName:(NSString * _Nonnull)name;
-
+-(void)disconnectWithUUIDString:(NSString * _Nonnull)uuid;
 
 
 #pragma mark - NSData 静态方法，也可以写成一个NSData/NSString扩展
@@ -78,5 +87,11 @@
 
 //计算一个NSData逐个字节异或后的值
 +(Byte) XOR:(NSData * _Nonnull)sourceData;
++(Byte) XOR:(Byte * _Nonnull)sourceBytes offset:(int)offset length:(int)len;
+
+//将float数据转为4个字节的内存表示
++(NSData *_Nonnull)fourBytesToFloat:(float)value;
+// 将4个字节转换为float数据
++(float)fourBytesToFloat:(Byte *_Nonnull)inbytes offset:(int)offset;
 
 @end

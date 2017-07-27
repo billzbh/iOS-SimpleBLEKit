@@ -26,6 +26,16 @@
     
     [[BLEManager getInstance] setIsLogOn:YES];//初始化
     
+    
+//    union bytesFloatConvert
+//    {
+//        float floatValue;
+//        char bytes[4];
+//    }c;
+//    
+//    c.floatValue = 8.75;
+//    NSLog(@"%@",[NSData dataWithBytes:c.bytes length:4]);
+    
     return YES;
 }
 
@@ -67,5 +77,9 @@
         return NO;
     }
 }
+
+//unsigned char * connn(float ff){
+//    unsigned char * tmp = (unsigned char *)&ff;
+//}
 
 @end

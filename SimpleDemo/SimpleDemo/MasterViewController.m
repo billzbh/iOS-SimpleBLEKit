@@ -76,6 +76,7 @@
     }
     
     [[BLEManager getInstance] stopScan];
+    [[BLEManager getInstance] setServiceUUIDsForSystemConnectdDevices:@[@"90BFDDCF-67C2-4CF4-A30E-F8C069B26675",@"67AB3EC9-4F28-49AB-B7DD-3D28419F022B"]];
     [[BLEManager getInstance] startScan:^(SimplePeripheral * _Nonnull peripheral) {
         
         if([self.objects containsObject:peripheral])

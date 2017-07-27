@@ -66,7 +66,7 @@
         return NO;
     }];
     //加快搜索服务和特征速度，间接加快连接速度.
-    [_selectedPeripheral setServiceAndCharacteristicsDictionary:@{serviceuuid:@[writeuuid,notifyuuid],@"180A":@[@"2A23",@"2A29"]}];
+    [_selectedPeripheral setServiceAndCharacteristicsDictionary:@{serviceuuid:@[writeuuid,notifyuuid]}];
     //其他可选设置
 //    [_selectedPeripheral setIsLog:NO];
 //    [_selectedPeripheral setMTU:20];
@@ -209,7 +209,7 @@
     // 当前点击textfield的坐标的Y值 + 当前点击textFiled的高度 - （屏幕高度- 键盘高度 - 键盘上tabbar高度）
     // 在这一部 就是了一个 当前textfile的的最大Y值 和 键盘的最全高度的差值，用来计算整个view的偏移量
     int offset = frame.origin.y + 42- ( heights - 216.0-35.0);
-    NSLog(@"设备:%@",[UIDevice currentDevice].model);
+    NSLog(@"当前ios设备:%@",[UIDevice currentDevice].model);
     if([[UIDevice currentDevice].model containsString:@"iPad"]){
         
         heights = self.view.frame.size.width;

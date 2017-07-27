@@ -14,19 +14,19 @@
 
 #pragma mark - 必须的操作方法
 
-//一簇设置收包完整规则的方法，默认收到数据就认为包完整。需要根据自己的需要自定义
+//一簇设置收包完整规则的方法（二选一），默认收到数据就认为包完整。需要根据自己的需要自定义
 -(void)setPacketVerifyEvaluator:(PacketVerifyEvaluator _Nullable)packetEvaluator;
 -(void)setResponseMatch:(NSString* _Nonnull)prefixString
            sufferString:(NSString* _Nonnull)sufferString
      NSDataExpectLength:(int)expectLen;
 
+
 #pragma mark - 通讯方法
 //1. 只发送
-//2. 发送接收(同步与异步)
-//3. 异步监听数据更新
+//2. 发送接收(同步)
+//3. 发送接收(异步)
 //只发送
 -(BOOL)sendData:(NSData * _Nonnull)data withWC:(NSString* _Nonnull)writeUUIDString;
-
 
 //发送接收(同步)
 -(NSData *_Nullable)sendData:(NSData * _Nonnull)data
@@ -58,7 +58,10 @@
 //设置是否分包发送。大于0，则按照数值分包。小于0，则不分包。默认是不分包
 -(void)setMTU:(int)MTU;
 //设置要搜索的服务和特征，加快连接速度
+//格式: @{service1:@[characterist1,characterist2],service2:@[characterist3,characterist4]}
 -(void)setServiceAndCharacteristicsDictionary:(NSDictionary * _Nonnull)dict;
+//报告成功连接前，可以预先做一些事情
+-(void)setupDeviceAfterConnected:(setupAfterConnected _Nullable)setupAfterConnectedBlock;
 
 #pragma mark  应答设置方法
 //设置是否收到数据后回给蓝牙设备应答数据，自定义应答数据和应答规则。默认不应答

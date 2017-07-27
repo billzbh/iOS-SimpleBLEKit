@@ -10,9 +10,11 @@
 
 @interface SimplePeripheral ()
 
+@property (strong, nonatomic) CBPeripheral   *__nullable peripheral;
+
 #pragma mark - framework内部使用的方法
 - (instancetype _Nonnull)initWithCentralManager:(CBCentralManager * _Nonnull)manager;
--(void)setPeripheral:(CBPeripheral * _Nonnull)peripheral;
+
 //连接设备
 -(void)connectDevice:(BLEStatusBlock _Nullable)myStatusBlock;
 @end

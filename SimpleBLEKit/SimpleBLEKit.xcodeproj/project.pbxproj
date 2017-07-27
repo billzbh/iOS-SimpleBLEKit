@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		251A95E91E7CDD620095BCED /* SimplePeripheralPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 251A95E71E7CDD620095BCED /* SimplePeripheralPrivate.h */; };
-		2521B7281E77ACC20071D714 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2521B7271E77ACC20071D714 /* CoreBluetooth.framework */; };
-		2521B72A1E77ACCA0071D714 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2521B7291E77ACCA0071D714 /* Foundation.framework */; };
+		2521B7281E77ACC20071D714 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2521B7271E77ACC20071D714 /* CoreBluetooth.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		2521B72A1E77ACCA0071D714 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2521B7291E77ACCA0071D714 /* Foundation.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2521B72D1E77AD770071D714 /* BLEManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2521B72B1E77AD770071D714 /* BLEManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2521B72E1E77AD770071D714 /* BLEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2521B72C1E77AD770071D714 /* BLEManager.m */; };
 		2521B7311E77B1AE0071D714 /* SimplePeripheral.h in Headers */ = {isa = PBXBuildFile; fileRef = 2521B72F1E77B1AE0071D714 /* SimplePeripheral.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -185,7 +185,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd $BUILT_PRODUCTS_DIR\ncd ..\n";
+			shellScript = "MONTH=`date +%m`\nDAY=`date +%d`\nYEAR=`date +%y`\nTODAY=\"20${YEAR}${MONTH}${DAY}\"\n\ngit_head=`git rev-parse --short HEAD`\nlast_commit=\"${TODAY}_LAST_COMMIT=${git_head}\"\n\n#/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion ${last_commit}\" ${PRODUCT_SETTINGS_PATH}\n\n\necho \"正在修改BLEManager.m文件中的SDK_Version值\"\necho ${PROJECT_DIR}\nCodeLineContent=`grep -n  '#define BLE_SDK_VERSION' ${PROJECT_DIR}/SimpleBLEKit/BLEManager.m`\nshasumline=`echo ${CodeLineContent%%:*}`\necho 更改的行数:$shasumline\n\noldContent=`sed -n ${shasumline}p ${PROJECT_DIR}/SimpleBLEKit/BLEManager.m | awk -F \\\" '{print $2}'`\necho 更改之前的行内容:$oldContent\nnewContent=${last_commit}\necho 更改之后的行内容:$newContent\n\ncommand=\"s/\"$oldContent\"/\"$newContent\"/g\"\nsed -i  '' $command ${PROJECT_DIR}/SimpleBLEKit/BLEManager.m\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

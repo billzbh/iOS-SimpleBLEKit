@@ -30,10 +30,10 @@ typedef void (^BLEStatusBlock)(BOOL isPrepareToCommunicate);
  */
 typedef void (^receiveDataBlock)(NSData * _Nullable outData,NSString * _Nullable error);
 typedef void (^updateDataBlock)(NSData * _Nullable updateData);
-
+typedef void (^readDataBlock)(NSData * _Nullable readData);
 typedef BOOL (^PacketVerifyEvaluator)(NSData * __nullable inputData);
 typedef BOOL (^NeekAckEvaluator)(NSData * __nullable inputData);
-
+typedef void (^setupAfterConnected)(void);
 
 #endif /* Typedef_h_SimpleBLEKit */
 
