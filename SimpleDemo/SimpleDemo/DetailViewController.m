@@ -137,7 +137,7 @@
     
     [[BLEManager getInstance] connectDevice:_selectedPeripheral callback:^(BOOL isPrepareToCommunicate) {
         
-        NSLog(@"设备连接%@",isPrepareToCommunicate?@"成功":@"失败");
+        NSLog(@"设备连接%@\n",isPrepareToCommunicate?@"成功":@"失败");
         
         [weakself.connectOrDisconnect setTitle:isPrepareToCommunicate?@"断开设备":@"连接设备" forState:UIControlStateNormal];
         weakself.connectOrDisconnect.tag = isPrepareToCommunicate?1:0;
@@ -161,19 +161,25 @@
     NSString * notifyuuid =  self.notifyUuid.text;
     NSString * writeuuid =  self.writeUuid.text;
     
-    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
+    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:10 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
         
         if(error){
             self.notifyTextview.text = [NSString stringWithFormat:@"%@",error];
         }else{
             NSString *out = [NSString stringWithFormat:@"%@从%@收到的包完整数据:\n%@\n",[self getTimeNow],[_selectedPeripheral getPeripheralName],[BLEManager NSData2hexString:outData]];
-            [self.notifyTextview.textStorage.mutableString appendString:out];
+            [self showLogMessage:out];
         }
     }];
 }
 
 
-
+- (void)showLogMessage:(NSString *)logMessage
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [_notifyTextview.textStorage appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@\n",logMessage] attributes:@{NSFontAttributeName:[UIFont fontWithName:@"Arial-BoldItalicMT" size:14]}]];
+        [_notifyTextview scrollRangeToVisible:NSMakeRange(_notifyTextview.text.length, 1)];
+    });
+}
 
 
 //以下都和外设方法的逻辑无关。不用看。

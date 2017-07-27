@@ -10,7 +10,7 @@
 #import "SimplePeripheralPrivate.h"
 #import <ExternalAccessory/ExternalAccessory.h>
 
-#define BLE_SDK_VERSION @"20170727_LAST_COMMIT=e5141c8"
+#define BLE_SDK_VERSION @"20170727_LAST_COMMIT=01e2ac2"
 
 @interface BLEManager () <CBCentralManagerDelegate>{
     BOOL isPowerON;
@@ -275,7 +275,7 @@
         
     }
     
-    if(_isLogOn) NSLog(@"└┈搜索到设备:%@ == %@(上报应用层)",peripheral.name,[peripheral.identifier UUIDString]);
+    if(_isLogOn) NSLog(@"└┈搜索到设备:%@(上报应用层)",peripheral.name);
     [simplePeripheral setPeripheral:peripheral];
     dispatch_async(dispatch_get_main_queue(), ^{
         
@@ -419,28 +419,92 @@
     return [NSString stringWithCString:(char*)outData encoding:NSUTF8StringEncoding];
 }
 
-// 将4个字节转换为float数据
-+(float)fourBytesToFloat:(Byte *)inbytes offset:(int)offset{
+
+/*
+ * int型 反转字节顺序，实现大端与小端互转
+ * @param InputNum
+ * @return
+ */
+int EndianConvert(int InputNum) {
+    unsigned char *p = (unsigned char*)&InputNum;
+    return(((int)*p<<24)+((int)*(p+1)<<16)+((int)*(p+2)<<8)+(int)*(p+3));
+}
+
+
+/*
+ * 将4个字节转换为float数据
+ * @param src                 字节数组指针
+ * @param offset              字节数组的位移
+ * @param srcIsBigEnddian     指示输入数组是否为大端表示，如果YES，此方法内部实现将会转为小端表示。
+ * @return  浮点数值，结果为小端表示
+ */
++(float)bytes2float:(Byte *)inbytes offset:(int)offset srcIsBigEnddian:(BOOL)srcIsBigEnddian{
 
     union bytesFloatConvert
     {
         float floatValue;
         Byte bytes[4];
+        int intValue;
     }c;
     memcpy(c.bytes, inbytes+offset, 4);
+    if (srcIsBigEnddian) {
+        c.intValue = EndianConvert(c.intValue);
+    }
     return c.floatValue;
 }
 
-//将float数据转为4个字节的内存表示
-+(NSData *)fourBytesToFloat:(float)value{
+/*
+ * 将float数据转为4个字节的内存表示
+ * @param value              整数数值
+ * @param resultIsBigEndian  结果是否需要为大端表示。
+ * @return  4字节的NSData
+ */
++(NSData *)float2data:(float)value resultIsBigEndian:(BOOL)resultIsBigEndian{
     
     union bytesFloatConvert
     {
         float floatValue;
         Byte bytes[4];
+        int intValue;
     }c;
     c.floatValue = value;
+    if (resultIsBigEndian) {
+        c.intValue =  EndianConvert(c.intValue);
+    }
     return [NSData dataWithBytes:c.bytes length:4];
+}
+
+/*
+ * @param value              整数数值
+ * @param resultIsBigEndian  结果是否需要为大端表示。
+ * @return  4字节的NSData
+ */
++(NSData *)integer2data:(int)value resultIsBigEndian:(BOOL)resultIsBigEndian{
+    
+    union bytesFloatConvert
+    {
+        int intValue;
+        char bytes[4];
+    }c;
+    c.intValue = resultIsBigEndian?EndianConvert(value):value;
+    return [NSData dataWithBytes:c.bytes length:4];
+}
+
+/*
+ * @param src                 字节数组指针
+ * @param offset              字节数组的位移
+ * @param srcIsBigEnddian     输入数组是否为大端表示，如果是，此方法内部实现将会转为小端表示。
+ * @return  整数数值，结果为小端表示
+ */
++(int)bytes2integer:(Byte *)src offset:(int)offset srcIsBigEnddian:(BOOL)srcIsBigEnddian{
+    
+    union bytesFloatConvert
+    {
+        int intValue;
+        char bytes[4];
+    }c;
+    memcpy(c.bytes, src+offset, 4);
+    return srcIsBigEnddian?EndianConvert(c.intValue):c.intValue;
 }
 
 @end

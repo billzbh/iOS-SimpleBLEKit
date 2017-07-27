@@ -216,8 +216,7 @@
     if (self.peripheral) {
         [_centralManager cancelPeripheralConnection:self.peripheral];
     }
-    
-    if(_isLog) NSLog(@"主动断开连接");
+    if(_isLog) NSLog(@"开始主动断开连接");
 }
 
 #pragma mark 发送接收方法(订阅通知)
@@ -298,7 +297,6 @@
             isFinish = YES;
             break;
         }
-        usleep(10000);
     }
     
     if (!isFinish) {
@@ -489,8 +487,12 @@
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral
                   error:(NSError *)error
 {
-
-    if(_isLog) NSLog(@"%@断开连接:\n %@",error==nil?@"iOS蓝牙中央设备":@"远端蓝牙外设",error);
+    if (error==nil) {
+        if(_isLog) NSLog(@"iOS蓝牙中央设备主动断开连接成功");
+    }else{
+        if(_isLog) NSLog(@"远端蓝牙外设断开连接,可能不在通讯范围内或者设备电源关闭了");
+    }
+    
     __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         if(weakself.MyStatusBlock!=nil)
@@ -635,7 +637,9 @@
     }
     
     NSString *uuidString = [characteristic.UUID UUIDString];
-    if(_isLog) NSLog(@"%@特征收到数据:%@",uuidString,characteristic.value);
+    if(_isLog) {
+        NSLog(@"%@特征收到数据:%@",uuidString,characteristic.value);
+    }
 
     updateDataBlock updateCallback = [_continueNotifyUUIDStringAndBlockDict objectForKey:uuidString];
     readDataBlock readCallback = [_readUUIDStringAndBlockDict objectForKey:uuidString];
@@ -646,6 +650,9 @@
         [_readUUIDStringAndBlockDict removeObjectForKey:uuidString];
     }else{
         [_dataDescription appendData:characteristic.value uuid:uuidString];//这里不断收集数据。发送接收用
+        if(_isLog) {
+            NSLog(@"数据长度总长:%ld",[[_dataDescription getPacketData:uuidString] length]);
+        }
     }
     
     if (_AckData!=nil && _AckWriteCharacteristicUUIDString!=nil && [_dataDescription isNeedToACK:uuidString]) {

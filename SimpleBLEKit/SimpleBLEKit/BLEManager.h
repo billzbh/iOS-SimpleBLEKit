@@ -89,9 +89,38 @@
 +(Byte) XOR:(NSData * _Nonnull)sourceData;
 +(Byte) XOR:(Byte * _Nonnull)sourceBytes offset:(int)offset length:(int)len;
 
-//将float数据转为4个字节的内存表示
-+(NSData *_Nonnull)fourBytesToFloat:(float)value;
-// 将4个字节转换为float数据
-+(float)fourBytesToFloat:(Byte *_Nonnull)inbytes offset:(int)offset;
+/*
+ * 四个字节的byte数组转为int
+ * @param src                 字节数组指针
+ * @param offset              字节数组的位移
+ * @param srcIsBigEnddian     输入数组是否为大端表示，如果是，此方法内部实现将会转为小端表示。
+ * @return  整数数值，结果为小端表示
+ */
++(int)bytes2integer:(Byte *_Nonnull)src offset:(int)offset srcIsBigEnddian:(BOOL)srcIsBigEnddian;
 
+/*
+ * 将4个字节转换为float数据
+ * @param src                 字节数组指针
+ * @param offset              字节数组的位移
+ * @param srcIsBigEnddian     指示输入数组是否为大端表示，如果YES，此方法内部实现将会转为小端表示。
+ * @return  浮点数值，结果为小端表示
+ */
++(float)bytes2float:(Byte *_Nonnull)inbytes offset:(int)offset srcIsBigEnddian:(BOOL)srcIsBigEnddian;
+
+/*
+ * int转为4个字节NSData
+ * @param value              整数数值
+ * @param resultIsBigEndian  结果是否需要为大端表示。
+ * @return  4字节的NSData
+ */
++(NSData *_Nonnull)integer2data:(int)value resultIsBigEndian:(BOOL)resultIsBigEndian;
+
+
+/*
+ * 将float数据转为4个字节的NSData
+ * @param value              整数数值
+ * @param resultIsBigEndian  结果是否需要为大端表示。
+ * @return  4字节的NSData
+ */
++(NSData *_Nonnull)float2data:(float)value resultIsBigEndian:(BOOL)resultIsBigEndian;
 @end
