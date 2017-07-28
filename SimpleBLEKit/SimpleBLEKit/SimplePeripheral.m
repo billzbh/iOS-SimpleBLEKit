@@ -33,7 +33,10 @@
 @property (strong,nonatomic)  NSData                    *AckData;
 @property (strong,nonatomic)  NSString                  *AckWriteCharacteristicUUIDString;
 @property (strong,nonatomic)  NSMutableDictionary       *continueNotifyUUIDStringAndBlockDict;
-@property (strong,nonatomic)  NSMutableDictionary       *readUUIDStringAndBlockDict;
+
+//都需要添加和删除元素
+@property (strong,nonatomic)  NSMutableDictionary       *NotifyUUIDStringAndBlockDict;
+@property (strong,nonatomic)  NSMutableDictionary       *NotifyUUIDStringAndNSTimerDict;
 @end
 
 
@@ -58,7 +61,8 @@
     _Characteristics = [[NSMutableDictionary alloc] init];
     _Services = [[NSMutableDictionary alloc] init];
     _continueNotifyUUIDStringAndBlockDict = [[NSMutableDictionary alloc] init];
-    _readUUIDStringAndBlockDict = [[NSMutableDictionary alloc] init];
+    _NotifyUUIDStringAndBlockDict = [[NSMutableDictionary alloc] init];
+    _NotifyUUIDStringAndNSTimerDict = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -76,7 +80,8 @@
     _AfterConnectedDoSomething = nil;
     _AckWriteCharacteristicUUIDString = nil;
     _continueNotifyUUIDStringAndBlockDict = nil;
-    _readUUIDStringAndBlockDict = nil;
+    _NotifyUUIDStringAndBlockDict = nil;
+    _NotifyUUIDStringAndNSTimerDict = nil;
 }
 
 -(void)setAckData:(NSData* _Nullable)data withWC:(NSString * _Nullable)writeUUIDString
@@ -241,6 +246,13 @@
             
         }else{//分包发送
             
+            int newMTU = (int)[self.peripheral maximumWriteValueLengthForType:_ResponseType];
+            if(_isLog)
+                NSLog(@"设置的MTU实验值=%d 系统和外设协商的MTU=%d",_MTU,newMTU);
+            if (_MTU > newMTU) {//设置的MTU实验值不能大于系统协商的MTU值
+                _MTU = newMTU;
+            }
+        
             int length = (int)data.length;
             int offset = 0;
             int sendLength = 0;
@@ -316,112 +328,53 @@
     __weak typeof(self) weakself = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-        NSData *result = [weakself sendData:data withWC:writeUUIDString withNC:notifyUUIDString timeout:timeInterval];
+        [weakself.dataDescription clearData:notifyUUIDString];
         
-        
-        if (result==nil) {
+        CBCharacteristic* characteristic = [weakself.Characteristics objectForKey:notifyUUIDString];
+        if (characteristic ==nil) {
+            //通知特征为nil，可能外设SimplePeripheral找不到此特征
+            if(weakself.isLog) NSLog(@"可订阅特征【%@】 找不到",notifyUUIDString);
             dispatch_async(dispatch_get_main_queue(), ^{
-                callback(nil,@"指令等待数据超时");
+                callback(nil,@"订阅特征找不到");
             });
-        }else{
-            dispatch_async(dispatch_get_main_queue(), ^{
-                callback(result,nil);
-            });
+            return;
+        }else if ((characteristic.properties & CBCharacteristicPropertyNotify) == CBCharacteristicPropertyNotify && characteristic.isNotifying == NO) {
+            [weakself.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+            usleep(100000);
         }
+        [_NotifyUUIDStringAndBlockDict setValue:callback forKey:notifyUUIDString];
+        
+        if([weakself sendData:data withWC:writeUUIDString]==NO){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                callback(nil,@"写入特征找不到");
+            });
+            return;
+        }
+        
+        if (timeInterval<=0) {
+            if(weakself.isLog) NSLog(@"超时时间未设置");
+            dispatch_async(dispatch_get_main_queue(), ^{
+                callback(nil,@"超时时间必须大于0");
+            });
+            return;
+        }
+        
+        
+        //NSTimer只能在主队列建立
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:timeInterval repeats:NO block:^(NSTimer * _Nonnull selfTimer) {
+                if(weakself.isLog) NSLog(@"定时器触发");
+                callback(nil,@"指令等待数据超时");
+                
+                NSTimer *timer = [_NotifyUUIDStringAndNSTimerDict objectForKey:notifyUUIDString];
+                if ([timer isValid]) {
+                    [timer invalidate];//关闭定时器
+                    [_NotifyUUIDStringAndNSTimerDict removeObjectForKey:notifyUUIDString];
+                }
+            }];
+            [_NotifyUUIDStringAndNSTimerDict setValue:timer forKey:notifyUUIDString];
+        });
     });
-}
-
-#pragma mark 发送接收方法(非订阅通知)
-
-
- //发送接收(同步阻塞)方法,需要在子线程运行
- //为什么需要阻塞方法？
- //有些时候在同一个业务逻辑你需要多次反复调用发送接受接口。但每一次都是得到上一次的结果后才继续的。
- //假如用block的方式，你的代码可能嵌套了好多层block。
- -(NSData *_Nullable)sendData:(NSData * _Nonnull)data
-                       withWC:(NSString* _Nonnull)writeUUIDString
-                       withRC:(NSString* _Nonnull)readUUIDString
-                      timeout:(double)timeInterval
- {
-     __block BOOL isFinish = NO;
-     [_dataDescription clearData:readUUIDString];
-     if([self sendData:data withWC:writeUUIDString]==NO){
-         return nil;//指令发送失败
-     }
- 
-     CBCharacteristic* characteristic = [_Characteristics objectForKey:readUUIDString];
-     if (characteristic==nil) {
-         if(_isLog) NSLog(@"读特征【%@】 找不到",readUUIDString);
-         return nil;
-     }
- 
-     if (timeInterval<=0) {
-         if(_isLog) NSLog(@"超时时间未设置");
-         return nil;
-     }
- 
-     double currenttime;
-     NSTimeInterval timeSeconds = [self currentTimeSeconds] + timeInterval;
-     while ((currenttime = [self currentTimeSeconds]) < timeSeconds) {
-         
-         [self readValueWithRC:readUUIDString readDataBlock:^(NSData * _Nullable readData) {
-             if(readData!=nil){
-                 [_dataDescription appendData:readData uuid:readUUIDString];
-                 if ([_dataDescription isValidPacket:readUUIDString]) {
-                     isFinish = YES;
-                 }
-             }
-         }];
-         usleep(20000);
-         if (isFinish) {
-             break;
-         }
-     }
- 
-     if (!isFinish) {
-         if(_isLog) NSLog(@"接收数据超时");
-         return nil;//等待数据超时
-     }
-     return [_dataDescription getPacketData:readUUIDString];
- }
- 
- //发送接收(异步)
- -(void)sendData:(NSData * _Nonnull)data
-          withWC:(NSString* _Nonnull)writeUUIDString
-          withRC:(NSString* _Nonnull)readUUIDString
-         timeout:(double)timeInterval
-     receiveData:(receiveDataBlock _Nonnull)callback
- {
- 
-     __weak typeof(self) weakself = self;
-     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
- 
-         NSData *result = [weakself sendData:data withWC:writeUUIDString withRC:readUUIDString timeout:timeInterval];
-         if (result==nil) {
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 callback(nil,@"指令等待数据超时");
-             });
-         }else{
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 callback(result,nil);
-             });
-         }
-     });
- }
- 
-
-//读取数据
--(void)readValueWithRC:(NSString* _Nonnull)readUUIDString readDataBlock:(readDataBlock _Nullable)callback {
-    
-    CBCharacteristic* characteristic = [_Characteristics objectForKey:readUUIDString];
-    if (characteristic == nil || (characteristic.properties & CBCharacteristicPropertyRead) != CBCharacteristicPropertyRead) {
-        if(_isLog) NSLog(@"读特征【%@】 找不到",readUUIDString);
-        return;
-    }
-    
-    [_readUUIDStringAndBlockDict setValue:callback forKey:readUUIDString];
-    [self.peripheral readValueForCharacteristic:characteristic];
-    return;
 }
 
 #pragma mark 只订阅通知，不发送数据
@@ -479,6 +432,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         if(weakself.MyStatusBlock!=nil)
             weakself.MyStatusBlock(NO);
+        
+        
     });
     return;
 }
@@ -628,7 +583,6 @@
     }
 }
 
-
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
     if (error) {
@@ -642,16 +596,32 @@
     }
 
     updateDataBlock updateCallback = [_continueNotifyUUIDStringAndBlockDict objectForKey:uuidString];
-    readDataBlock readCallback = [_readUUIDStringAndBlockDict objectForKey:uuidString];
+    receiveDataBlock receiveCallback = [_NotifyUUIDStringAndBlockDict objectForKey:uuidString];
     if (updateCallback !=nil ) {
         updateCallback(characteristic.value);
-    }else if( readCallback!= nil){
-        readCallback(characteristic.value);
-        [_readUUIDStringAndBlockDict removeObjectForKey:uuidString];
     }else{
         [_dataDescription appendData:characteristic.value uuid:uuidString];//这里不断收集数据。发送接收用
         if(_isLog) {
             NSLog(@"数据长度总长:%ld",[[_dataDescription getPacketData:uuidString] length]);
+        }
+        //如果收包完整发送一个通知
+        if([_dataDescription isValidPacket:uuidString]){
+            
+            //关闭定时器，从定时器池中移除定时器
+            NSTimer *timer = [_NotifyUUIDStringAndNSTimerDict objectForKey:uuidString];
+            if (timer!=nil) {
+                if ([timer isValid]) {
+                    [timer invalidate];//关闭定时器
+                    timer = nil;
+                    [_NotifyUUIDStringAndNSTimerDict removeObjectForKey:uuidString];
+                }
+                receiveCallback([_dataDescription getPacketData:uuidString],nil);
+            }
+            
+            //移除回调方法
+            [_NotifyUUIDStringAndBlockDict removeObjectForKey:uuidString];
+            
+            return;
         }
     }
     

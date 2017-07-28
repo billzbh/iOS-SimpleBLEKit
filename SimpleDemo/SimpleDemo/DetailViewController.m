@@ -66,7 +66,8 @@
         return NO;
     }];
     //加快搜索服务和特征速度，间接加快连接速度.
-    [_selectedPeripheral setServiceAndCharacteristicsDictionary:@{serviceuuid:@[writeuuid,notifyuuid]}];
+//    [_selectedPeripheral setServiceAndCharacteristicsDictionary:@{serviceuuid:@[writeuuid,notifyuuid]}];
+    [_selectedPeripheral setServiceAndCharacteristicsDictionary:nil];
     //其他可选设置
 //    [_selectedPeripheral setIsLog:NO];
 //    [_selectedPeripheral setMTU:20];
@@ -150,6 +151,7 @@
     [self.MTU setEnabled:sender.isOn];
     if (sender.isOn) {
         [self.MTU becomeFirstResponder];
+        [_selectedPeripheral setMTU:[self.MTU.text intValue]];
     }
 }
 
@@ -161,7 +163,8 @@
     NSString * notifyuuid =  self.notifyUuid.text;
     NSString * writeuuid =  self.writeUuid.text;
     
-    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:10 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
+    
+    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
         
         if(error){
             self.notifyTextview.text = [NSString stringWithFormat:@"%@",error];

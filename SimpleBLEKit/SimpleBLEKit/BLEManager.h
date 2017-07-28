@@ -24,8 +24,9 @@
 //设置要搜索的设备的service UUID，搜索时会把系统中符合此uuids的已经连接的设备也上报。
 -(void)setServiceUUIDsForSystemConnectdDevices:(NSArray<NSString *>* _Nullable)services;
 
-//搜索功能
--(void)startScan:(SearchBlock _Nonnull)searchBLEBlock timeout:(NSTimeInterval)interval;
+//搜索过滤蓝牙名称
+-(void)startScan:(SearchBlock _Nonnull)searchBLEBlock nameFilter:(NSArray<NSString *>*_Nullable)nameFilters
+         timeout:(NSTimeInterval)interval;
 
 //停止搜索
 -(void)stopScan;
@@ -35,7 +36,7 @@
 
 
 //返回此BLEManager对象管理的所有已连接外设
--(NSArray<SimplePeripheral *>* _Nonnull)getConnectPeripherals;
+-(NSArray<SimplePeripheral *>* _Nullable)getConnectPeripherals;
 //如果外设名称不同，可以通过名称从设备池中获取到已连接的外设
 -(SimplePeripheral *_Nullable)getConnectPeripheralWithPrefixName:(NSString *_Nonnull)BLE_Name;
 //可以通过uuid从设备池中获取到已连接的外设

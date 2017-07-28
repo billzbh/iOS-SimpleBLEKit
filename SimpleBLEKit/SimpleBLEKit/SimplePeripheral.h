@@ -15,6 +15,7 @@
 #pragma mark - 必须的操作方法
 
 //一簇设置收包完整规则的方法（二选一），默认收到数据就认为包完整。需要根据自己的需要自定义
+//收包完整规则尽量不要太复杂，执行时间越短越好
 -(void)setPacketVerifyEvaluator:(PacketVerifyEvaluator _Nullable)packetEvaluator;
 -(void)setResponseMatch:(NSString* _Nonnull)prefixString
            sufferString:(NSString* _Nonnull)sufferString
@@ -65,6 +66,7 @@
 
 #pragma mark  应答设置方法
 //设置是否收到数据后回给蓝牙设备应答数据，自定义应答数据和应答规则。默认不应答
+//应答规则的执行时间越短越好
 -(void)setAckData:(NSData* _Nullable)data withWC:(NSString * _Nullable)writeUUIDString
  withACKEvaluator:(NeekAckEvaluator _Nullable)ackEvaluator;
 

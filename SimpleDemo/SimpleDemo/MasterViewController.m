@@ -76,7 +76,7 @@
     }
     
     [[BLEManager getInstance] stopScan];
-    [[BLEManager getInstance] setServiceUUIDsForSystemConnectdDevices:@[@"FFF0",@"18F0"]];//参数是设备内的serviceuuid其中一个
+    [[BLEManager getInstance] setServiceUUIDsForSystemConnectdDevices:@[@"FFF0",@"18F0",@"180A"]];//参数是设备内的serviceuuid其中一个
     [[BLEManager getInstance] startScan:^(SimplePeripheral * _Nonnull peripheral) {
         
         if([self.objects containsObject:peripheral])
@@ -84,7 +84,7 @@
         [self.objects insertObject:peripheral atIndex:0];
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
         [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-    } timeout:-1];
+    } nameFilter:nil/*@[@"iMate",@"K203",@"HxBluetooth",@"JXNX"]*/  timeout:300];
 }
 
 

@@ -10,13 +10,13 @@
 #import "SimplePeripheralPrivate.h"
 #import <ExternalAccessory/ExternalAccessory.h>
 
-#define BLE_SDK_VERSION @"20170727_LAST_COMMIT=01e2ac2"
+#define BLE_SDK_VERSION @"20170728_LAST_COMMIT=7a6a3cd"
 
 @interface BLEManager () <CBCentralManagerDelegate>{
     BOOL isPowerON;
 }
 
-
+@property (strong, nonatomic) NSArray<NSString *>* FilterBleNameArray;
 @property (strong, nonatomic) CBCentralManager  *centralManager;
 @property (strong, nonatomic) NSMutableArray<CBUUID *>  *services;
 @property (nonatomic,copy) SearchBlock MysearchBLEBlock;
@@ -155,9 +155,11 @@
     }
 }
 
-
--(void)startScan:(SearchBlock)searchBLEBlock timeout:(NSTimeInterval)interval
+//搜索符合过滤名称的设备
+-(void)startScan:(SearchBlock)searchBLEBlock nameFilter:(NSArray<NSString *>*)nameFilters
+         timeout:(NSTimeInterval)interval
 {
+    _FilterBleNameArray = nameFilters;
     _MysearchBLEBlock = searchBLEBlock;
     _centralManager.delegate = self;
     if (_searchedDeviceUUIDArray==nil) {
@@ -187,7 +189,19 @@
         NSArray<CBPeripheral *>* connectPeripherals = [_centralManager retrieveConnectedPeripheralsWithServices:_services];
         SimplePeripheral *tmpPeripheral;
         for (CBPeripheral *cbP in connectPeripherals) {
-            if(_isLogOn) NSLog(@"└┈搜索到设备:%@(其他app已连接)",cbP.name);
+            if(_isLogOn) NSLog(@"└┈搜索到其他app已连接的设备:%@(上报应用层)",cbP.name);
+            if(_FilterBleNameArray!=nil){
+                int i = 0;
+                for (NSString* name in _FilterBleNameArray) {
+                    if([cbP.name containsString:name])
+                        break;
+                    i++;
+                }
+                if (i==[_FilterBleNameArray count]) {
+                    continue;
+                }
+            }
+            
             if(cbP.state==CBPeripheralStateDisconnected){
                 tmpPeripheral = [[SimplePeripheral alloc] initWithCentralManager:_centralManager];
                 [tmpPeripheral setPeripheral:cbP];
@@ -208,7 +222,6 @@
             if(_isLogOn) NSLog(@"定时器触发停止搜索");
             [weakself stopScan];
             [timer invalidate];
-            timer = nil;
         }];
     }
     if(_isLogOn) {
@@ -237,11 +250,6 @@
     }
 }
 
-
--(void)centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary<NSString *,id> *)dict{
-    NSLog(@"centralManager:willRestoreState = %@",dict);
-}
-
 //启动搜索的结果回调
 - (void) centralManager:(CBCentralManager *)central
   didDiscoverPeripheral:(CBPeripheral *)peripheral
@@ -264,6 +272,18 @@
     }else{
         [_searchedDeviceUUIDArray setValue:peripheral.name forKey:[peripheral.identifier UUIDString]];
     }
+
+    if(_FilterBleNameArray!=nil){
+        int i = 0;
+        for (NSString* name in _FilterBleNameArray) {
+            if([peripheral.name containsString:name])
+                break;
+            i++;
+        }
+        if (i==[_FilterBleNameArray count]) {
+            return;
+        }
+    }
     
     __weak typeof(self) weakself = self;
     //组装外设对象
@@ -276,6 +296,7 @@
     }
     
     if(_isLogOn) NSLog(@"└┈搜索到设备:%@(上报应用层)",peripheral.name);
+    
     [simplePeripheral setPeripheral:peripheral];
     dispatch_async(dispatch_get_main_queue(), ^{
         
