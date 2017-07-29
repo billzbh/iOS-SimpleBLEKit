@@ -660,7 +660,7 @@
         return;
     }
     // Notification has started
-    if(_isLog) NSLog(@"%@%@",[characteristic.UUID UUIDString],characteristic.isNotifying?@"正在监听,等待数据":@"取消监听");
+    if(_isLog) NSLog(@"%@%@",[characteristic.UUID UUIDString],characteristic.isNotifying?@"订阅成功,监听数据中...":@"取消订阅成功");
 }
 
 
