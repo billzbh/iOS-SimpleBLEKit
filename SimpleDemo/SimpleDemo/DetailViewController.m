@@ -164,22 +164,21 @@
     NSString * writeuuid =  self.writeUuid.text;
     
     
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        NSData *data222 = [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:15];
-//        if (data222==nil) {
-//            NSLog(@"超时或者设备忙");
-//        }
-//    });
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSDictionary *dict = [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:15];
+        NSString *out = [NSString stringWithFormat:@"%@,包完整数据:\n%@\n",dict[@"error"],dict[@"data"]];
+        [self showLogMessage:out];
+    });
     
-    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSError * _Nullable error) {
-        
-        if(error){
-            self.notifyTextview.text = [NSString stringWithFormat:@"%@",error];
-        }else{
-            NSString *out = [NSString stringWithFormat:@"%@从%@收到的包完整数据:\n%@\n",[self getTimeNow],[_selectedPeripheral getPeripheralName],[BLEManager NSData2hexString:outData]];
-            [self showLogMessage:out];
-        }
-    }];
+//    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSError * _Nullable error) {
+//        
+//        if(error){
+//            [self showLogMessage:[NSString stringWithFormat:@"%@",error]];
+//        }else{
+//            NSString *out = [NSString stringWithFormat:@"%@从%@收到的包完整数据:\n%@\n",[self getTimeNow],[_selectedPeripheral getPeripheralName],[BLEManager NSData2hexString:outData]];
+//            [self showLogMessage:out];
+//        }
+//    }];
 }
 
 
