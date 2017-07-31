@@ -28,7 +28,7 @@ typedef void (^BLEStatusBlock)(BOOL isPrepareToCommunicate);
  @param outData 有值时表示收到的数据包
  @param error 这里有值表示超时
  */
-typedef void (^receiveDataBlock)(NSData * _Nullable outData,NSString * _Nullable error);
+typedef void (^receiveDataBlock)(NSData * _Nullable outData,NSError * _Nullable error);
 typedef void (^updateDataBlock)(NSData * _Nullable updateData);
 typedef void (^readDataBlock)(NSData * _Nullable readData);
 typedef BOOL (^PacketVerifyEvaluator)(NSData * __nullable inputData);

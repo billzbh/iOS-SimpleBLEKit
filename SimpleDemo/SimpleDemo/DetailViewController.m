@@ -164,7 +164,14 @@
     NSString * writeuuid =  self.writeUuid.text;
     
     
-    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSString * _Nullable error) {
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        NSData *data222 = [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:15];
+//        if (data222==nil) {
+//            NSLog(@"超时或者设备忙");
+//        }
+//    });
+    
+    [_selectedPeripheral sendData:data withWC:writeuuid withNC:notifyuuid timeout:100 receiveData:^(NSData * _Nullable outData, NSError * _Nullable error) {
         
         if(error){
             self.notifyTextview.text = [NSString stringWithFormat:@"%@",error];

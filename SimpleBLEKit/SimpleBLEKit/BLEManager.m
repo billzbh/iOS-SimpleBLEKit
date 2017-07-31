@@ -10,7 +10,7 @@
 #import "SimplePeripheralPrivate.h"
 #import <ExternalAccessory/ExternalAccessory.h>
 
-#define BLE_SDK_VERSION @"20170728_LAST_COMMIT=7a6a3cd"
+#define BLE_SDK_VERSION @"20170731_LAST_COMMIT=d5d2d66"
 
 @interface BLEManager () <CBCentralManagerDelegate>{
     BOOL isPowerON;

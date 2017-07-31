@@ -29,11 +29,11 @@
 //只发送
 -(BOOL)sendData:(NSData * _Nonnull)data withWC:(NSString* _Nonnull)writeUUIDString;
 
-//发送接收(同步)
--(NSData *_Nullable)sendData:(NSData * _Nonnull)data
-                      withWC:(NSString* _Nonnull)writeUUIDString
-                      withNC:(NSString* _Nonnull)notifyUUIDString
-                     timeout:(double)timeInterval;
+//发送接收(同步),返回的字典包含"data"和"error"字段
+-(NSDictionary *_Nullable)sendData:(NSData * _Nonnull)data
+                            withWC:(NSString* _Nonnull)writeUUIDString
+                            withNC:(NSString* _Nonnull)notifyUUIDString
+                           timeout:(double)timeInterval;
 //发送接收(异步)
 -(void)sendData:(NSData * _Nonnull)data
          withWC:(NSString* _Nonnull)writeUUIDString
