@@ -65,6 +65,10 @@
 
 -(void)searchBLE:(id)sender{
     [self startSearch];
+//   测试直接连接符合蓝牙名称的接口
+//    [[BLEManager getInstance] scanAndConnected:@[@"JXNX-SHFL-021504"] callback:^(SimplePeripheral * _Nonnull peripheral, BOOL isPrepareToCommunicate) {
+//        NSLog(@"%@",[peripheral getPeripheralName]);
+//    }];
 }
 
 -(void)startSearch{
@@ -84,7 +88,7 @@
         [self.objects insertObject:peripheral atIndex:0];
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
         [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-    } nameFilter:nil/*@[@"iMate",@"K203",@"HxBluetooth",@"JXNX"]*/  timeout:300];
+    } nameFilter:nil/*@[@"iMate",@"K203",@"HxBluetooth",@"JXNX"]*/  timeout:4];
 }
 
 

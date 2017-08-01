@@ -11,7 +11,7 @@
 #import <ExternalAccessory/ExternalAccessory.h>
 #import <CoreFoundation/CFByteOrder.h>
 
-#define BLE_SDK_VERSION @"20170801_LAST_COMMIT=9a10f2f"
+#define BLE_SDK_VERSION @"20170801_LAST_COMMIT=e5ab629"
 
 @interface BLEManager () <CBCentralManagerDelegate>
 @property (strong, nonatomic) NSArray<NSString *>* FilterBleNameArray;
@@ -111,18 +111,10 @@
 
 -(void)connectDevice:(SimplePeripheral *)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock
 {
-
-    
-//    __weak typeof(self) weakself = self;//记得防止block循环引用
-    [simplePeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
-        
-        if (isPrepareToCommunicate) {
-            //如果自己公司的SDK要兼容几种不同协议的外设
-            //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
-            //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
-        }
-        myStatusBlock(isPrepareToCommunicate);
-    }];
+    //如果自己公司的SDK要兼容几种不同协议的外设
+    //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
+    //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
+    [simplePeripheral connectDevice:myStatusBlock];
 }
 
 
@@ -131,14 +123,18 @@
                callback:(searchAndConnectBlock _Nullable)multiDeviceBlock
 {
     [self startScan:^(SimplePeripheral * _Nonnull peripheral) {
-        if ([btNameArray containsObject:peripheral.getPeripheralName]) {
+        if ([btNameArray containsObject:[peripheral getPeripheralName]]) {
+            
+            //如果自己公司的SDK要兼容几种不同协议的外设
+            //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
+            //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
+//            if ([[peripheral getPeripheralName] containsString:@"JXNX"]) {
+//                [peripheral setPacketVerifyEvaluator:^BOOL(NSData * _Nullable inputData) {
+//                    return YES;
+//                }];
+//            }
+            
             [peripheral connectDevice:^(BOOL isPrepareToCommunicate) {
-                
-                if (isPrepareToCommunicate) {
-                    //如果自己公司的SDK要兼容几种不同协议的外设
-                    //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
-                    //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
-                }
                 multiDeviceBlock(peripheral,isPrepareToCommunicate);
             }];
         }

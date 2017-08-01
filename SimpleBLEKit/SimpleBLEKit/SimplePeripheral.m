@@ -187,7 +187,7 @@
     }
     
     if(_packetVerifyEvaluator==nil){
-        NSLog(@"默认规则是收到数据包size大于0就认为收包完整\n自定义收包完整的规则,调用(二选一):\n-(void)setPacketVerifyEvaluator:(PacketVerifyEvaluator)packetEvaluator\n-(void)setResponseMatch:(NSString*)prefixString sufferString:(NSString*)sufferString NSDataExpectLength:(int)expectLen\n");
+        NSLog(@"PacketVerifyEvaluator未设置\n-----默认规则是收到数据包size大于0就认为收包完整\n自定义收包完整的规则,调用(二选一):\n-(void)setPacketVerifyEvaluator:(PacketVerifyEvaluator)packetEvaluator\n-(void)setResponseMatch:(NSString*)prefixString sufferString:(NSString*)sufferString NSDataExpectLength:(int)expectLen\n");
         return;
     }
     
