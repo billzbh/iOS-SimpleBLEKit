@@ -9,13 +9,11 @@
 #import "BLEManager.h"
 #import "SimplePeripheralPrivate.h"
 #import <ExternalAccessory/ExternalAccessory.h>
+#import <CoreFoundation/CFByteOrder.h>
 
-#define BLE_SDK_VERSION @"20170731_LAST_COMMIT=1c19529"
+#define BLE_SDK_VERSION @"20170801_LAST_COMMIT=9a10f2f"
 
-@interface BLEManager () <CBCentralManagerDelegate>{
-    BOOL isPowerON;
-}
-
+@interface BLEManager () <CBCentralManagerDelegate>
 @property (strong, nonatomic) NSArray<NSString *>* FilterBleNameArray;
 @property (strong, nonatomic) CBCentralManager  *centralManager;
 @property (strong, nonatomic) NSMutableArray<CBUUID *>  *services;
@@ -37,7 +35,6 @@
     _Device_dict = [[NSMutableDictionary alloc] init];
     dispatch_queue_t _centralManagerQueue = dispatch_queue_create("com.zbh.SimpleBLEKit.centralManagerQueue", DISPATCH_QUEUE_SERIAL);
     _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:_centralManagerQueue options:nil];
-    isPowerON = NO;
     _isLogOn = NO;
     return self;
 }
@@ -114,6 +111,8 @@
 
 -(void)connectDevice:(SimplePeripheral *)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock
 {
+
+    
 //    __weak typeof(self) weakself = self;//记得防止block循环引用
     [simplePeripheral connectDevice:^(BOOL isPrepareToCommunicate) {
         
@@ -125,6 +124,27 @@
         myStatusBlock(isPrepareToCommunicate);
     }];
 }
+
+
+//合并 startSearch 和 connectDevice 方法。直接连接符合蓝牙名称的设备
+-(void)scanAndConnected:(NSArray<NSString *>*)btNameArray
+               callback:(searchAndConnectBlock _Nullable)multiDeviceBlock
+{
+    [self startScan:^(SimplePeripheral * _Nonnull peripheral) {
+        if ([btNameArray containsObject:peripheral.getPeripheralName]) {
+            [peripheral connectDevice:^(BOOL isPrepareToCommunicate) {
+                
+                if (isPrepareToCommunicate) {
+                    //如果自己公司的SDK要兼容几种不同协议的外设
+                    //可以直接在这里通过不同的外设名称，区分不同的收发规则等，外部调用就不再需要设置，也不会暴露协议。
+                    //还可以通过不同的外设名称，将外设对象返回给更复杂功能的对象，使得它可以利用外设的通讯方法封装更多不同的方法。
+                }
+                multiDeviceBlock(peripheral,isPrepareToCommunicate);
+            }];
+        }
+    } nameFilter:btNameArray timeout:2*btNameArray.count+2];
+}
+
 
 -(void)disconnectAll{
     
@@ -243,8 +263,8 @@
 //init中央设备结果回调
 - (void) centralManagerDidUpdateState:(CBCentralManager *)central
 {
-    if (_centralManager.state==5) {//CBManagerStatePoweredOn
-        if(_isLogOn) NSLog(@"本地蓝牙状态正常");
+    if (_centralManager.state==5) {//CBManagerStatePoweredOn 或者 CBCentralManagerStatePoweredOn
+        if(_isLogOn) NSLog(@"本地蓝牙中央设备状态正常");
     }else{
         if(_isLogOn) NSLog(@"蓝牙状态异常:====[%ld]====",(long)_centralManager.state);
     }
@@ -442,17 +462,6 @@
 
 
 /*
- * int型 反转字节顺序，实现大端与小端互转
- * @param InputNum
- * @return
- */
-int EndianConvert(int InputNum) {
-    unsigned char *p = (unsigned char*)&InputNum;
-    return(((int)*p<<24)+((int)*(p+1)<<16)+((int)*(p+2)<<8)+(int)*(p+3));
-}
-
-
-/*
  * 将4个字节转换为float数据
  * @param src                 字节数组指针
  * @param offset              字节数组的位移
@@ -463,13 +472,13 @@ int EndianConvert(int InputNum) {
 
     union bytesFloatConvert
     {
-        float floatValue;
+        Float32 floatValue;
         Byte bytes[4];
-        int intValue;
+        uint32_t intValue;
     }c;
     memcpy(c.bytes, inbytes+offset, 4);
     if (srcIsBigEnddian) {
-        c.intValue = EndianConvert(c.intValue);
+        c.intValue = CFSwapInt32(c.intValue);
     }
     return c.floatValue;
 }
@@ -484,13 +493,13 @@ int EndianConvert(int InputNum) {
     
     union bytesFloatConvert
     {
-        float floatValue;
+        Float32 floatValue;
         Byte bytes[4];
-        int intValue;
+        uint32_t intValue;
     }c;
     c.floatValue = value;
     if (resultIsBigEndian) {
-        c.intValue =  EndianConvert(c.intValue);
+        c.intValue =  CFSwapInt32(c.intValue);
     }
     return [NSData dataWithBytes:c.bytes length:4];
 }
@@ -504,10 +513,10 @@ int EndianConvert(int InputNum) {
     
     union bytesFloatConvert
     {
-        int intValue;
-        char bytes[4];
+        uint32_t intValue;
+        Byte bytes[4];
     }c;
-    c.intValue = resultIsBigEndian?EndianConvert(value):value;
+    c.intValue = resultIsBigEndian?CFSwapInt32(value):value;
     return [NSData dataWithBytes:c.bytes length:4];
 }
 
@@ -521,11 +530,11 @@ int EndianConvert(int InputNum) {
     
     union bytesFloatConvert
     {
-        int intValue;
-        char bytes[4];
+        uint32_t intValue;
+        Byte bytes[4];
     }c;
     memcpy(c.bytes, src+offset, 4);
-    return srcIsBigEnddian?EndianConvert(c.intValue):c.intValue;
+    return srcIsBigEnddian?CFSwapInt32(c.intValue):c.intValue;
 }
 
 @end

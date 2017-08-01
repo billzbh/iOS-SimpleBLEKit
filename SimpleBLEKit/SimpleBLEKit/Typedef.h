@@ -22,6 +22,14 @@ typedef void (^SearchBlock)(SimplePeripheral* _Nonnull peripheral);
  */
 typedef void (^BLEStatusBlock)(BOOL isPrepareToCommunicate);
 
+/**
+ 调用scanAndConnected:callback:后的回调，得到外设对象以及是否正常通讯的标志。
+ 
+ @param peripheral  外设对象
+ @param isPrepareToCommunicate YES，可以开始通讯；NO ，通讯通道未准备好，不能通讯
+ 
+ */
+typedef void (^searchAndConnectBlock)(SimplePeripheral* _Nonnull peripheral,BOOL isPrepareToCommunicate);
 
 /**
  发送数据后接受数据的结果回调

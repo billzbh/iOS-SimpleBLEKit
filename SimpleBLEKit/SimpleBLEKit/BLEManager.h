@@ -34,6 +34,9 @@
 //连接设备
 -(void)connectDevice:(SimplePeripheral * _Nonnull)simplePeripheral callback:(BLEStatusBlock _Nullable)myStatusBlock;
 
+//合并 startSearch 和 connectDevice 方法。直接连接符合蓝牙名称的设备
+-(void)scanAndConnected:(NSArray<NSString *>* _Nonnull)btNameArray callback:(searchAndConnectBlock _Nullable)multiDeviceBlock;
+
 
 //返回此BLEManager对象管理的所有已连接外设
 -(NSArray<SimplePeripheral *>* _Nullable)getConnectPeripherals;

@@ -137,7 +137,6 @@
     __weak typeof(self) weakself = self;
     
     [[BLEManager getInstance] connectDevice:_selectedPeripheral callback:^(BOOL isPrepareToCommunicate) {
-        
         NSLog(@"设备连接%@\n",isPrepareToCommunicate?@"成功":@"失败");
         
         [weakself.connectOrDisconnect setTitle:isPrepareToCommunicate?@"断开设备":@"连接设备" forState:UIControlStateNormal];

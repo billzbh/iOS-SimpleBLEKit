@@ -211,6 +211,8 @@
 
     [self setIsAutoReconnect:NO];
     _CharacteristicsCount = 0;
+    [_workingStatusDict removeAllObjects];
+    
     if (self.peripheral) {
         
         for (CBCharacteristic* characteristic in [_Characteristics allValues]) {
@@ -604,7 +606,7 @@
     }else{
         [_dataDescription appendData:characteristic.value uuid:uuidString];//这里不断收集数据。发送接收用
         if(_isLog) {
-            NSLog(@"数据长度总长:%ld",[[_dataDescription getPacketData:uuidString] length]);
+            NSLog(@"数据长度总长:%ld",(unsigned long)[[_dataDescription getPacketData:uuidString] length]);
         }
         
         if([_dataDescription isValidPacket:uuidString]){//如果收包完整
