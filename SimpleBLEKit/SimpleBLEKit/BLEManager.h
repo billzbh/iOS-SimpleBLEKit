@@ -22,7 +22,8 @@
 -(void)setIsLogOn:(BOOL)isLogOn;
 
 //设置要搜索的设备的service UUID，搜索时会把系统中符合此uuids的已经连接的设备也上报。
--(void)setServiceUUIDsForSystemConnectdDevices:(NSArray<NSString *>* _Nullable)services;
+//如果已经设置过后想变为全部搜索，再次调用设置为nil
+-(void)setScanServiceUUIDs:(NSArray<NSString *>* _Nullable)services;
 
 //搜索过滤蓝牙名称
 -(void)startScan:(SearchBlock _Nonnull)searchBLEBlock nameFilter:(NSArray<NSString *>*_Nullable)nameFilters

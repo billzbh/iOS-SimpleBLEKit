@@ -249,6 +249,7 @@
                     <connections>
                         <outlet property="MTU" destination="5HL-oE-3nm" id="VaM-cE-tDz"/>
                         <outlet property="SendHexDataButton" destination="FWe-8M-odw" id="WOG-RR-T6d"/>
+                        <outlet property="autoConnectSwitch" destination="CNy-DM-IPf" id="zBd-KX-irJ"/>
                         <outlet property="connectOrDisconnect" destination="Dho-cL-7wi" id="NSk-hm-tXR"/>
                         <outlet property="isSetMTU" destination="aUz-hN-ms0" id="HKn-kJ-Mae"/>
                         <outlet property="notifyTextview" destination="2UX-eu-Dvy" id="10S-iR-Qom"/>
@@ -294,7 +295,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Arm-wq-HPj">
-                                            <rect key="frame" x="16" y="0.0" width="289" height="43.5"/>
+                                            <rect key="frame" x="15" y="0.0" width="290" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>

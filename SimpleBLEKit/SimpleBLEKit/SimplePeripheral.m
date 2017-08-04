@@ -11,15 +11,14 @@
 #import "DataDescription.h"
 #import "BLEManager.h"
 
-@interface SimplePeripheral () <CBCentralManagerDelegate, CBPeripheralDelegate> {
+@interface SimplePeripheral () <CBPeripheralDelegate> {
     BOOL isTimeout;
 }
-
+@property (copy, nonatomic)   BLEStatusBlock _Nullable    MyStatusBlock;
 @property (strong, nonatomic) CBCentralManager          *centralManager;
 @property (strong, nonatomic) NSDictionary              *serviceAndCharacteristicsDictionary;
 @property (strong, nonatomic) NSMutableDictionary       *Services;
 @property (strong, nonatomic) NSMutableDictionary       *Characteristics;
-@property (copy, nonatomic)   BLEStatusBlock             MyStatusBlock;
 @property (copy, nonatomic)   PacketVerifyEvaluator      packetVerifyEvaluator;
 @property (copy, nonatomic)   setupAfterConnected        AfterConnectedDoSomething;
 @property (strong,nonatomic)  DataDescription            *dataDescription;
@@ -28,7 +27,7 @@
 @property (assign,nonatomic)  int                       ServicesCount;
 @property (assign,nonatomic)  CBCharacteristicWriteType ResponseType;
 @property (assign,nonatomic)  BOOL                      isLog;
-@property (assign,nonatomic)  BOOL                      isAutoReconnect;
+
 @property (assign,nonatomic)  BOOL                      isWorking;
 @property (strong,nonatomic)  NSData                    *AckData;
 @property (strong,nonatomic)  NSString                  *AckWriteCharacteristicUUIDString;
@@ -70,7 +69,6 @@
 
 - (void)dealloc
 {
-    _centralManager.delegate = nil;
     _centralManager = nil;
     _dataDescription = nil;
     _serviceAndCharacteristicsDictionary = nil;
@@ -162,8 +160,7 @@
 
 -(void)connectDevice:(BLEStatusBlock)myStatusBlock{
     _MyStatusBlock = myStatusBlock;
-    _centralManager.delegate = self;
-    
+
     if ([self isConnected]) {
         __weak typeof(self) weakself = self;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -200,8 +197,7 @@
         if(_isLog) NSLog(@"发生nil错误,可能外设SimplePeripheral并不是来自搜索得来的对象");
         return;
     }
-
-    _ServicesCount = 0;
+    
     [self.centralManager connectPeripheral:_peripheral
                                    options:nil];
     
@@ -394,8 +390,7 @@
 }
 
 #pragma mark  - CBCentralManagerDelegate method
-//init中央设备结果回调
-- (void) centralManagerDidUpdateState:(CBCentralManager *)central{}
+
 //发起连接的回调结果
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
@@ -408,6 +403,7 @@
     self.peripheral.delegate = self; //实现CBPeripheralDelegate的方法
     
     if(_serviceAndCharacteristicsDictionary==nil){
+        _ServicesCount = 0;
         [self.peripheral discoverServices:nil];
     }else{
         NSMutableArray<CBUUID *> *servicesArray = [[NSMutableArray alloc] init];
@@ -418,7 +414,6 @@
     }
 }
 
-
 //发起连接的回调结果(假设远端蓝牙关闭电源，自动连接时可能报这个错)
 - (void) centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)aPeripheral
                   error:(NSError *)error
@@ -428,20 +423,23 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         if(weakself.MyStatusBlock!=nil)
             weakself.MyStatusBlock(NO);
-        
-        
     });
     return;
 }
 
-//（主动被动）断开连接的回调结果
+//（主动被动）断开连接的回调结果（主动==【调用cancel接口、系统蓝牙关闭】、被动==【远端蓝牙关闭】）
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral
                   error:(NSError *)error
 {
     if (error==nil) {
-        if(_isLog) NSLog(@"iOS蓝牙中央设备主动断开连接成功");
+        if(_isLog) NSLog(@"iOS设备主动断开连接或者ios设备关闭蓝牙");
     }else{
         if(_isLog) NSLog(@"远端蓝牙外设断开连接,可能不在通讯范围内或者设备电源关闭了");
+        // We're disconnected, so start scanning again
+        if(_isAutoReconnect){
+            if(_isLog) NSLog(@"准备自动重连");
+            [self.centralManager connectPeripheral:_peripheral options:nil];
+        }
     }
     
     //取消所有定时器,移除所有定时器
@@ -457,21 +455,11 @@
         if(weakself.MyStatusBlock!=nil)
             weakself.MyStatusBlock(NO);
     });
-    
-    // We're disconnected, so start scanning again
-    if(_isAutoReconnect){
-        
-        if(_isLog) NSLog(@"准备自动重连");
-        
-        [self.centralManager connectPeripheral:_peripheral
-                                            options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES]
-                                            forKey:CBCentralManagerRestoredStatePeripheralsKey]];
-    }
 }
 
 
 
-#pragma mark - CBPeripheralDelegate methods
+#pragma mark - 伪造的CBPeripheralDelegate methods
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {

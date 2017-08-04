@@ -80,7 +80,9 @@
     }
     
     [[BLEManager getInstance] stopScan];
-    [[BLEManager getInstance] setServiceUUIDsForSystemConnectdDevices:@[@"FFF0",@"18F0",@"180A"]];//参数是设备内的serviceuuid其中一个
+    
+    //参数是设备内的serviceuuid其中一个，不是CBPeripheral的identifier
+    [[BLEManager getInstance] setScanServiceUUIDs:@[@"FFF0",@"18F0",@"180A"]];
     [[BLEManager getInstance] startScan:^(SimplePeripheral * _Nonnull peripheral) {
         
         if([self.objects containsObject:peripheral])

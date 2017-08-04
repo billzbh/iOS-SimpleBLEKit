@@ -10,6 +10,7 @@
 #import <SimpleBLEKit/BLEManager.h>
 
 @interface DetailViewController () <UITextFieldDelegate>
+@property (weak, nonatomic) IBOutlet UISwitch *autoConnectSwitch;
 
 @end
 
@@ -36,7 +37,6 @@
 
 - (IBAction)ConnectOrDisconnectAction:(id)sender {
     
-
     if(![_selectedPeripheral isKindOfClass:[SimplePeripheral class]])
         return;
     NSString * serviceuuid =  self.serviceUuid.text;
@@ -50,6 +50,8 @@
     [[BLEManager getInstance] stopScan];
     if(self.connectOrDisconnect.tag == 1){
         [_selectedPeripheral disconnect];
+        [self.selectedPeripheral setIsAutoReconnect:NO];//可选
+        [_autoConnectSwitch setOn:NO];
         return;
     }
     
