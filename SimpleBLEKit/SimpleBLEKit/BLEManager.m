@@ -217,10 +217,20 @@
             }
         }
     });
+  
+    //测试一下
+//    NSUUID *A = [[NSUUID alloc] initWithUUIDString:@"78"];
+//    NSUUID *B = [[NSUUID alloc] initWithUUIDString:@"21"];
+//    NSArray<CBPeripheral *>* connectPeripheralsXXX = [_centralManager retrievePeripheralsWithIdentifiers:@[A,B]];
+//    NSLog(@"%@",connectPeripheralsXXX);
     
     //上报系统中别的app已经连接的,但此对象_centralManager还未连接的蓝牙设备
     if ([_services count]>0) {
+        
+        //retrieveConnectedPeripheralsWithServices 在已连接列表中取回符合的对象
         NSArray<CBPeripheral *>* connectPeripherals = [_centralManager retrieveConnectedPeripheralsWithServices:_services];
+        
+        
         SimplePeripheral *tmpPeripheral;
         for (CBPeripheral *cbP in connectPeripherals) {
             if(_isLogOn) NSLog(@"└┈搜索到其他app已连接的设备:%@(上报应用层)",cbP.name);
