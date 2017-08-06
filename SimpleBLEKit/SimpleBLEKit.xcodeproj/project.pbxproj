@@ -18,6 +18,8 @@
 		2521B7371E77FE520071D714 /* DataDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 2521B7351E77FE520071D714 /* DataDescription.m */; };
 		2521B7391E78F9A50071D714 /* SimpleBLEKitTypeDef.h in Headers */ = {isa = PBXBuildFile; fileRef = 2521B7381E78F9A50071D714 /* SimpleBLEKitTypeDef.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2521B78B1E7973A50071D714 /* CreateFrameWork.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2521B78A1E7973A50071D714 /* CreateFrameWork.txt */; };
+		25ED276D1F36F45900645E67 /* CBCentralManager+Coding.h in Headers */ = {isa = PBXBuildFile; fileRef = 25ED276B1F36F45900645E67 /* CBCentralManager+Coding.h */; };
+		25ED276E1F36F45900645E67 /* CBCentralManager+Coding.m in Sources */ = {isa = PBXBuildFile; fileRef = 25ED276C1F36F45900645E67 /* CBCentralManager+Coding.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,8 @@
 		2521B7351E77FE520071D714 /* DataDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataDescription.m; sourceTree = "<group>"; };
 		2521B7381E78F9A50071D714 /* SimpleBLEKitTypeDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleBLEKitTypeDef.h; sourceTree = "<group>"; };
 		2521B78A1E7973A50071D714 /* CreateFrameWork.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CreateFrameWork.txt; sourceTree = SOURCE_ROOT; };
+		25ED276B1F36F45900645E67 /* CBCentralManager+Coding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CBCentralManager+Coding.h"; sourceTree = "<group>"; };
+		25ED276C1F36F45900645E67 /* CBCentralManager+Coding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CBCentralManager+Coding.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +83,8 @@
 				2521B7341E77FE520071D714 /* DataDescription.h */,
 				2521B7351E77FE520071D714 /* DataDescription.m */,
 				2521B7381E78F9A50071D714 /* SimpleBLEKitTypeDef.h */,
+				25ED276B1F36F45900645E67 /* CBCentralManager+Coding.h */,
+				25ED276C1F36F45900645E67 /* CBCentralManager+Coding.m */,
 			);
 			path = SimpleBLEKit;
 			sourceTree = "<group>";
@@ -102,6 +108,7 @@
 				251A95E91E7CDD620095BCED /* SimplePeripheralPrivate.h in Headers */,
 				2521B72D1E77AD770071D714 /* BLEManager.h in Headers */,
 				2521B7361E77FE520071D714 /* DataDescription.h in Headers */,
+				25ED276D1F36F45900645E67 /* CBCentralManager+Coding.h in Headers */,
 				2521B7391E78F9A50071D714 /* SimpleBLEKitTypeDef.h in Headers */,
 				2521B7311E77B1AE0071D714 /* SimplePeripheral.h in Headers */,
 			);
@@ -194,6 +201,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				25ED276E1F36F45900645E67 /* CBCentralManager+Coding.m in Sources */,
 				2521B72E1E77AD770071D714 /* BLEManager.m in Sources */,
 				2521B7371E77FE520071D714 /* DataDescription.m in Sources */,
 				2521B7321E77B1AE0071D714 /* SimplePeripheral.m in Sources */,

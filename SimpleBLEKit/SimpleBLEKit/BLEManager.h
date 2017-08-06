@@ -15,6 +15,9 @@
 //单例对象
 + (BLEManager * _Nonnull)getInstance;
 
+//重置中央对象(比如恢复的时候)
+-(void)replaceCentralManager:(CBCentralManager *_Nonnull)central;
+
 //获取SDK版本
 -(NSString * _Nonnull)getSDKVersion;
 

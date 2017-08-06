@@ -74,7 +74,7 @@
 -(void)setMTU:(int)MTU;
 //设置要搜索的服务和特征，加快连接速度
 //格式: @{service1:@[characterist1,characterist2],service2:@[characterist3,characterist4]}
--(void)setServiceAndCharacteristicsDictionary:(NSDictionary * _Nonnull)dict;
+-(void)setServiceAndCharacteristicsDictionary:(NSDictionary * _Nullable)dict;
 //报告成功连接前，可以预先做一些事情
 -(void)setupDeviceAfterConnected:(setupAfterConnected _Nullable)setupAfterConnectedBlock;
 

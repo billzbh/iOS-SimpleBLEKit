@@ -100,7 +100,7 @@
     _AfterConnectedDoSomething = setupAfterConnectedBlock;
 }
 
--(void)setServiceAndCharacteristicsDictionary:(NSDictionary * _Nonnull)dict;
+-(void)setServiceAndCharacteristicsDictionary:(NSDictionary * _Nullable)dict;
 {
     _serviceAndCharacteristicsDictionary = dict;
     [_Services removeAllObjects];
@@ -143,6 +143,7 @@
 
 
 -(BOOL)isConnected{
+    
     if (_peripheral) {
         if (_peripheral.state==CBPeripheralStateDisconnected) {
             return NO;

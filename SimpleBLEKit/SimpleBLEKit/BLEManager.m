@@ -11,7 +11,7 @@
 #import <ExternalAccessory/ExternalAccessory.h>
 #import <CoreFoundation/CFByteOrder.h>
 
-#define BLE_SDK_VERSION @"20170806_LAST_COMMIT=d7cc50d"
+#define BLE_SDK_VERSION @"20170806_LAST_COMMIT=126dd99"
 #define BLE_SDK_RestoreIdentifierKey @"com.zbh.SimpleBLEKit.RestoreKey"
 
 @interface BLEManager () <CBCentralManagerDelegate>
@@ -49,9 +49,6 @@
     else {
         _centralManager = [_centralManager initWithDelegate:self queue:_centralManagerQueue];
     }
-    
-    
-    _centralManager.delegate = self;
     _isLogOn = NO;
     return self;
 }
@@ -80,6 +77,17 @@
         NSLog(@"SimpleBLEKit Version: %@",BLE_SDK_VERSION);
     });
     return sharedInstance;
+}
+
+-(void)replaceCentralManager:(CBCentralManager *)central{
+    _centralManager = central;
+    dispatch_queue_t _centralManagerQueue = dispatch_queue_create("com.zbh.SimpleBLEKit.centralManagerQueue", DISPATCH_QUEUE_SERIAL);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored"-Wunused-value"
+    //重新初始化delegate和queue
+    [_centralManager initWithDelegate:self queue:_centralManagerQueue options:@{CBCentralManagerOptionShowPowerAlertKey:@YES,CBCentralManagerOptionRestoreIdentifierKey: BLE_SDK_RestoreIdentifierKey}];
+#pragma clang diagnostic pop
 }
 
 -(NSString *)getSDKVersion{
