@@ -41,6 +41,14 @@
         timeout:(double)timeInterval
     receiveData:(receiveDataBlock _Nonnull)callback;
 
+
+#pragma mark 只订阅通知，不发送数据
+//开始不断监听数据更新
+-(void)startListenWithNC:(NSString* _Nonnull)notifyUUIDString updateDataBlock:(updateDataBlock _Nullable)callback;
+//停止监听数据更新 (如果想用发送接收方法，刚好notify的UUID和这个一样，需要停止监听)
+-(void)stopListenwithNC:(NSString* _Nonnull)notifyUUIDString;
+
+
 #pragma mark - 常用方法
 //蓝牙名称
 -(NSString* _Nonnull)getPeripheralName;
@@ -49,9 +57,15 @@
 //断开连接
 -(void)disconnect;
 
+#pragma mark 其他方法
+//读取特征的描述文字，请在连接前调用setIsReadDescriptors:使能后才能使用这个接口
+-(NSString *_Nullable)readCharacteristicsDescriptors:(NSString * _Nonnull)characteristicUUID;
+
 #pragma mark - 如果不需要用到相关功能，请不要设置这些方法
 //是否打开日志打印，默认是NO
 -(void)setIsLog:(BOOL)isLog;
+//设置是否连接后读取特征的描述文字
+-(void)setIsReadDescriptors:(BOOL)isReadDescriptors;
 //是否断开后自动重连，默认是NO
 -(void)setIsAutoReconnect:(BOOL)isAutoReconnect;
 //设置写数据的通知类型,默认是CBCharacteristicWriteWithoutResponse

@@ -12,6 +12,7 @@
 #import <CoreFoundation/CFByteOrder.h>
 
 #define BLE_SDK_VERSION @"20170804_LAST_COMMIT=0d73c8b"
+#define BLE_SDK_RestoreIdentifierKey @"com.zbh.SimpleBLEKit.RestoreKey"
 
 @interface BLEManager () <CBCentralManagerDelegate>
 @property (strong, nonatomic) NSArray<NSString *>* FilterBleNameArray;
@@ -36,9 +37,18 @@
     _Device_dict = [[NSMutableDictionary alloc] init];
     _ConnectDevice_dict = [[NSMutableDictionary alloc] init];
     dispatch_queue_t _centralManagerQueue = dispatch_queue_create("com.zbh.SimpleBLEKit.centralManagerQueue", DISPATCH_QUEUE_SERIAL);
-    _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:_centralManagerQueue options:@{CBCentralManagerOptionShowPowerAlertKey:@YES,CBCentralManagerOptionRestoreIdentifierKey:@"com.zbh.SimpleBLEKit.RestoreKey"}];
-    //在蓝牙关闭时，是否提示蓝牙需要打开
-    //centralManager:willRestoreState: 中根据CBCentralManagerOptionRestoreIdentifierKey恢复CBCentralManager对象
+    
+    _centralManager = [CBCentralManager alloc];
+    if ([_centralManager respondsToSelector:@selector(initWithDelegate:queue:options:)]) {
+        
+        //在蓝牙关闭时，是否提示蓝牙需要打开
+        //centralManager:willRestoreState: 中根据CBCentralManagerOptionRestoreIdentifierKey恢复CBCentralManager对象
+        _centralManager = [_centralManager initWithDelegate:self queue:_centralManagerQueue options:@{CBCentralManagerOptionShowPowerAlertKey:@YES,CBCentralManagerOptionRestoreIdentifierKey: BLE_SDK_RestoreIdentifierKey}];
+    }
+    else {
+        _centralManager = [_centralManager initWithDelegate:self queue:_centralManagerQueue];
+    }
+    
     
     _centralManager.delegate = self;
     _isLogOn = NO;

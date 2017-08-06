@@ -27,13 +27,14 @@
 @property (assign,nonatomic)  int                       ServicesCount;
 @property (assign,nonatomic)  CBCharacteristicWriteType ResponseType;
 @property (assign,nonatomic)  BOOL                      isLog;
-
+@property (assign,nonatomic)  BOOL                      isReadDescriptors;
 @property (assign,nonatomic)  BOOL                      isWorking;
 @property (strong,nonatomic)  NSData                    *AckData;
 @property (strong,nonatomic)  NSString                  *AckWriteCharacteristicUUIDString;
 @property (strong,nonatomic)  NSMutableDictionary       *continueNotifyUUIDStringAndBlockDict;
 
 //都需要添加和删除元素
+@property (strong,nonatomic)  NSMutableDictionary       *DescriptionDict;
 @property (strong,nonatomic)  NSMutableDictionary       *NotifyUUIDStringAndBlockDict;
 @property (strong,nonatomic)  NSMutableDictionary       *NotifyUUIDStringAndNSTimerDict;
 @property (strong,nonatomic)  NSMutableDictionary       *workingStatusDict;//每个特征通讯工作状态，主要记录订阅通知的工作状态
@@ -52,6 +53,7 @@
     _centralManager = manager;
     _dataDescription = [[DataDescription alloc] init];
     _isLog = NO;
+    _isReadDescriptors = NO;
     _isAutoReconnect =NO;
     _MTU = -1;
     _CharacteristicsCount = 0;
@@ -64,6 +66,7 @@
     _NotifyUUIDStringAndBlockDict = [[NSMutableDictionary alloc] init];
     _NotifyUUIDStringAndNSTimerDict = [[NSMutableDictionary alloc] init];
     _workingStatusDict = [[NSMutableDictionary alloc] init];
+    _DescriptionDict = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -82,6 +85,7 @@
     _continueNotifyUUIDStringAndBlockDict = nil;
     _NotifyUUIDStringAndBlockDict = nil;
     _NotifyUUIDStringAndNSTimerDict = nil;
+    _DescriptionDict = nil;
     _workingStatusDict = nil;
 }
 
@@ -102,6 +106,7 @@
     _serviceAndCharacteristicsDictionary = dict;
     [_Services removeAllObjects];
     [_Characteristics removeAllObjects];
+    _ServicesCount = 0;
     _CharacteristicsCount = 0;
 }
 
@@ -206,9 +211,7 @@
 -(void)disconnect{
 
     [self setIsAutoReconnect:NO];
-    _CharacteristicsCount = 0;
-    [_workingStatusDict removeAllObjects];
-    
+
     if (self.peripheral) {
         
         for (CBCharacteristic* characteristic in [_Characteristics allValues]) {
@@ -219,7 +222,7 @@
         [_Characteristics removeAllObjects];
     }
     
-    if (self.peripheral) {
+    if (self.peripheral && (self.peripheral.state == CBPeripheralStateConnecting || self.peripheral.state == CBPeripheralStateConnected)) {
         [_centralManager cancelPeripheralConnection:self.peripheral];
     }
     if(_isLog) NSLog(@"开始主动断开连接");
@@ -284,14 +287,17 @@
     //创建信号量
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     __block NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
+    //初始化一个错误值
+    result[@"error"] = [NSError errorWithDomain:@"com.zhangbh.SimpleBLEKit" code:5 userInfo:@{@"info":@"通讯超时，设备没有响应"}];
     [self sendData:data withWC:writeUUIDString withNC:notifyUUIDString timeout:timeInterval receiveData:^(NSData * _Nullable outData, NSError * _Nullable error) {
         
         result[@"data"] = outData;
         result[@"error"] = error;
         dispatch_semaphore_signal(sem);//释放信号量
     }];
-    //这里一直等待
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    //这里一直等待，直到超时
+    dispatch_time_t waitTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)((timeInterval+0.5) * NSEC_PER_SEC));
+    dispatch_semaphore_wait(sem, waitTime);
     return result;
 }
 
@@ -389,7 +395,14 @@
     return;
 }
 
-#pragma mark  - CBCentralManagerDelegate method
+
+#pragma mark 读取特征的描述文字
+
+-(NSString *)readCharacteristicsDescriptors:(NSString *)characteristicUUID{
+    return _DescriptionDict[characteristicUUID];
+}
+
+#pragma mark  - BLEManager会调用此外设的method
 
 //发起连接的回调结果
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
@@ -403,7 +416,6 @@
     self.peripheral.delegate = self; //实现CBPeripheralDelegate的方法
     
     if(_serviceAndCharacteristicsDictionary==nil){
-        _ServicesCount = 0;
         [self.peripheral discoverServices:nil];
     }else{
         NSMutableArray<CBUUID *> *servicesArray = [[NSMutableArray alloc] init];
@@ -434,7 +446,7 @@
     if (error==nil) {
         if(_isLog) NSLog(@"iOS设备主动断开连接或者ios设备关闭蓝牙");
     }else{
-        if(_isLog) NSLog(@"远端蓝牙外设断开连接,可能不在通讯范围内或者设备电源关闭了");
+        if(_isLog) NSLog(@"远端蓝牙外设断开连接,可能不在通讯范围内或者外设关闭蓝牙");
         // We're disconnected, so start scanning again
         if(_isAutoReconnect){
             if(_isLog) NSLog(@"准备自动重连");
@@ -448,6 +460,15 @@
             [timer invalidate];
         }
     }
+    
+    //clear
+    _ServicesCount = 0;
+    _CharacteristicsCount = 0;
+    [_Services removeAllObjects];
+    [_Characteristics removeAllObjects];
+    [_workingStatusDict removeAllObjects];
+    [_DescriptionDict removeAllObjects];
+    [_NotifyUUIDStringAndBlockDict removeAllObjects];
     [_NotifyUUIDStringAndNSTimerDict removeAllObjects];
     
     __weak typeof(self) weakself = self;
@@ -459,7 +480,7 @@
 
 
 
-#pragma mark - 伪造的CBPeripheralDelegate methods
+#pragma mark - CBPeripheralDelegate methods
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
@@ -526,6 +547,10 @@
 //                [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
 //            }
             [_Characteristics setValue:characteristic forKey:[characteristic.UUID UUIDString]];
+            
+            if(_isReadDescriptors){
+                [self.peripheral discoverDescriptorsForCharacteristic:characteristic];
+            }
         }
         
         if (_ServicesCount == [_Services count]) {
@@ -558,6 +583,10 @@
 //                [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
 //            }
             [_Characteristics setValue:characteristic forKey:[characteristic.UUID UUIDString]];
+            
+            if(_isReadDescriptors){
+                [self.peripheral discoverDescriptorsForCharacteristic:characteristic];
+            }
         }
         
         if ([_Characteristics count] == _CharacteristicsCount) {//结束搜索特征
@@ -573,6 +602,17 @@
             });
         }
     }
+}
+
+
+-(void)peripheral:(CBPeripheral *)peripheral didDiscoverDescriptorsForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error{
+    if (error) {
+        if(_isLog) NSLog(@"读特征的描述文字时发生错误:\n %@",error);
+        return;
+    }
+    
+    //把描述文字添加到字典
+    [_DescriptionDict setValue:[[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding] forKey:[characteristic.UUID UUIDString]];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
