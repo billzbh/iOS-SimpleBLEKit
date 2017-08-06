@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
-#import "Typedef.h"
+#import "SimpleBLEKitTypeDef.h"
 
 @interface SimplePeripheral : NSObject
 

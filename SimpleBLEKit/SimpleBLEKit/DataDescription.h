@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Typedef.h"
+#import "SimpleBLEKitTypeDef.h"
 
 @interface DataDescription : NSObject
 

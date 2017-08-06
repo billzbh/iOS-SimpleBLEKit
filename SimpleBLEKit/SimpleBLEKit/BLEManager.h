@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "SimplePeripheral.h"
 #import <CoreBluetooth/CoreBluetooth.h>
-#import "Typedef.h"
+#import "SimpleBLEKitTypeDef.h"
 
 @interface BLEManager : NSObject
 //单例对象

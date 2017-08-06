@@ -11,10 +11,11 @@
 #import <ExternalAccessory/ExternalAccessory.h>
 #import <CoreFoundation/CFByteOrder.h>
 
-#define BLE_SDK_VERSION @"20170804_LAST_COMMIT=0d73c8b"
+#define BLE_SDK_VERSION @"20170806_LAST_COMMIT=d7cc50d"
 #define BLE_SDK_RestoreIdentifierKey @"com.zbh.SimpleBLEKit.RestoreKey"
 
 @interface BLEManager () <CBCentralManagerDelegate>
+
 @property (strong, nonatomic) NSArray<NSString *>* FilterBleNameArray;
 @property (strong, nonatomic) CBCentralManager  *centralManager;
 @property (strong, nonatomic) NSMutableArray<CBUUID *>  *services;

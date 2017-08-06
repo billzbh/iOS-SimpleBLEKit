@@ -11,9 +11,8 @@
 #import "DataDescription.h"
 #import "BLEManager.h"
 
-@interface SimplePeripheral () <CBPeripheralDelegate> {
-    BOOL isTimeout;
-}
+@interface SimplePeripheral () <CBPeripheralDelegate>
+
 @property (copy, nonatomic)   BLEStatusBlock _Nullable    MyStatusBlock;
 @property (strong, nonatomic) CBCentralManager          *centralManager;
 @property (strong, nonatomic) NSDictionary              *serviceAndCharacteristicsDictionary;
