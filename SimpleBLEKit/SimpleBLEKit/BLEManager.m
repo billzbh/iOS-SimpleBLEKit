@@ -80,6 +80,8 @@
 }
 
 -(void)replaceCentralManager:(CBCentralManager *)central{
+    
+    _centralManager.delegate = nil;
     _centralManager = central;
     dispatch_queue_t _centralManagerQueue = dispatch_queue_create("com.zbh.SimpleBLEKit.centralManagerQueue", DISPATCH_QUEUE_SERIAL);
 
